@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>retry3</title>
+    <% if (htmlWebpackPlugin.options.nodeModules) { %>
+      <!-- Add `node_modules/` to global paths so `require` works properly in development -->
+      <script>
+        require('module').globalPaths.push('<%= htmlWebpackPlugin.options.nodeModules.replace(/\\/g, '\\\\') %>')
+      </script>
+    <% } %>
+  </head>
+  <body>
+    <div ondblclick="maximize()" style="position: absolute; width:100%; height:35px; background-color:transparent;-webkit-app-region: drag !important;z-index:1000; filter: blur(2px);"></div>
+    <div id="app" ondblclick="null"></div>
+    <!-- Set `__static` path to static files in production -->
+    <% if (!process.browser) { %>
+      <script>
+        if (process.env.NODE_ENV !== 'development') window.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+      </script>
+    <% } %>
+    <script>
+    const {remote} = require('electron');
+    function maximize(){
+      var window = remote.BrowserWindow.getFocusedWindow();
+      window.isMaximized() ? window.unmaximize() : window.maximize();
+    }
+    </script>
+    <!-- webpack builds are automatically injected -->
+  </body>
+</html>
