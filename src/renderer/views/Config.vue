@@ -1,5 +1,5 @@
 <template>
-  <div class="config d-flex flex-column">
+  <div class="config d-flex flex-column no-scroll">
     <div
       class="titleWrapper d-flex pl-5 pr-5 align-center justify-space-between"
     >
@@ -24,15 +24,36 @@
         style="width:95%; flex:1"
       >
         <v-tab-item background-color="white">
-          <v-card class="mt-1 pr-5 pl-5 mt-5" elevation="0">
+          <v-card class="mt-1 pr-5 pt-3 pl-5 mt-5" elevation="0">
+            <span class="header-2-alt thin pl-3">Información</span>
             <v-container fluid>
-              <span class="header-2-alt thin">Información</span>
-              <v-row>
-                <v-avatar tile size="160">
-                  <v-img
-                    contain
-                    src="http://beer-control.local:3000/placeLogo"
-                  />
+              <v-row style="overflow:visible; flex-wrap:nowrap">
+                <v-avatar tile size="160" style="overflow:visible" class="mr-5">
+                  <v-img v-if="!editInfo" contain :src="image.imageURL" />
+
+                  <image-input v-else v-model="image" class="image-picker">
+                    <div slot="activator" class="image-wrapper">
+                      <div
+                        class="d-flex flex-column"
+                        v-if="!image"
+                        style="text-align:center"
+                      >
+                        <v-icon :size="90" color="grey">
+                          mdi-image-filter-hdr
+                        </v-icon>
+                        <span class="pb-2">NO IMAGE</span>
+                      </div>
+                      <v-avatar size="100%" v-ripple v-else class="mb-0" tile>
+                        <v-img :src="image.imageURL" contain alt="image" />
+                      </v-avatar>
+                      <div
+                        class="d-flex justify-center align-center"
+                        style="left:0;right:0;margin-left: auto;margin-right: auto;position: absolute; bottom: -20px; width: 40px; height: 40px;border-radius: 9px;box-shadow: 0 10px 20px -5px #9794f2;border: solid 1px #9794f2;background-color: #9794f2;"
+                      >
+                        <v-icon color="white">mdi-camera</v-icon>
+                      </div>
+                    </div>
+                  </image-input>
                 </v-avatar>
                 <v-scroll-y-transition :hide-on-leave="true">
                   <v-row v-show="!editInfo">
@@ -127,7 +148,7 @@
                   width="130px"
                   outlined
                   color="error"
-                  @click="editInfo = false"
+                  @click="closeEditInfo()"
                 >
                   <v-icon left v-html="'mdi-close'" />
                   cancelar
@@ -156,38 +177,102 @@
             </v-container>
           </v-card>
 
-          <v-card class="mt-1 pr-5 pl-5 mt-5" elevation="0">
-            <v-container fluid>
-              <span class="header-2-alt thin">Tarjeta de Emergecia</span>
-              <v-row>
-                <v-col>
-                  <img src="../assets/redCard.svg" class="card ml-5" />
-                </v-col>
-              </v-row>
-              <v-row justify="end">
-                <v-btn
-                  v-if="true"
-                  class="ma-2"
-                  width="130px"
-                  outlined
-                  @click.stop="emergencyCardModal = true"
-                >
-                  <v-icon left v-html="'mdi-pencil'" />
-                  editar
-                </v-btn>
-                <v-btn
-                  v-if="false"
-                  class="ma-2"
-                  width="130px"
-                  outlined
-                  @click=""
-                >
-                  <v-icon left v-html="'mdi-check'" />
-                  guardar
-                </v-btn>
-              </v-row>
-            </v-container>
-          </v-card>
+          <v-container fluid class="pa-0">
+            <v-row>
+              <v-col md="12" lg="6" xl="6">
+                <v-card class="mt-1 pr-5 pl-5 mt-5" elevation="0">
+                  <v-container fluid>
+                    <span class="header-2-alt thin">Tarjeta de Emergecia</span>
+                    <v-row>
+                      <!-- <v-img contain :src="BASE_URL + '/placeLogo'" /> -->
+                      <img src="../assets/redCard.svg" class="card ml-5" />
+
+                      <v-col class="d-flex flex-column">
+                        <span class="bold-names light mt-5 ">
+                          # de Tarjeta de Emergencia
+                        </span>
+                        <span class="header-4-alt mate ml-3">
+                          -{{
+                            this.emergencyCard.length > 0
+                              ? this.emergencyCard
+                              : "No hay Tarjeta de emergencia asignada"
+                          }}
+                        </span>
+                      </v-col>
+                    </v-row>
+                    <v-row justify="end">
+                      <v-btn
+                        v-if="true"
+                        class="ma-2"
+                        width="130px"
+                        outlined
+                        @click.stop="emergencyCardModal = true"
+                      >
+                        <v-icon left v-html="'mdi-pencil'" />
+                        editar
+                      </v-btn>
+                      <v-btn
+                        v-if="false"
+                        class="ma-2"
+                        width="130px"
+                        outlined
+                        @click=""
+                      >
+                        <v-icon left v-html="'mdi-check'" />
+                        guardar
+                      </v-btn>
+                    </v-row>
+                  </v-container>
+                </v-card>
+              </v-col>
+              <v-col md="12" lg="6" xl="6">
+                <v-card class="mt-1 pr-5 pl-5 mt-5" elevation="0">
+                  <v-container fluid style="height:328px">
+                    <span class="header-2-alt thin">Servidor Externo</span>
+                    <v-row style="height:220px">
+                      <!-- <v-img contain :src="BASE_URL + '/placeLogo'" /> -->
+                      <img src="../assets/servers.svg" class="server ml-5" />
+                      <v-col class="d-flex flex-column">
+                        <span class="bold-names light mt-5 ">
+                          <v-icon size="18" v-text="'mdi-link-variant'" /> URL
+                          del serveidor
+                        </span>
+                        <span class="header-4-alt mate ml-3">
+                          -{{
+                            this.emergencyCard.length > 0
+                              ? this.emergencyCard
+                              : "No hay Tarjeta de emergencia asignada"
+                          }}
+                        </span>
+                      </v-col>
+                    </v-row>
+                    <v-row justify="end">
+                      <v-btn
+                        v-if="true"
+                        class="ma-2"
+                        width="130px"
+                        outlined
+                        @click.stop="emergencyCardModal = true"
+                      >
+                        <v-icon left v-html="'mdi-pencil'" />
+                        editar
+                      </v-btn>
+                      <v-btn
+                        v-if="false"
+                        class="ma-2"
+                        width="130px"
+                        outlined
+                        @click=""
+                      >
+                        <v-icon left v-html="'mdi-check'" />
+                        guardar
+                      </v-btn>
+                    </v-row>
+                  </v-container>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-container>
         </v-tab-item>
         <!-- /////////////////////////////////////// Tap Menú           /////////////////////////////////////// -->
         <v-tab-item>
@@ -353,17 +438,19 @@ import fs from "fs";
 import path from "path";
 import config from "../config";
 import QrcodeVue from "qrcode.vue";
+import ImageInput from "../components/form/ImageInput.vue";
 import { DoughnutChart } from "../components/charts";
 import { AddEmergencyCard } from "../components/modals";
 
 export default {
   name: "Barrels",
-  components: { QrcodeVue, DoughnutChart, AddEmergencyCard },
+  components: { QrcodeVue, DoughnutChart, AddEmergencyCard, ImageInput },
   data() {
     return {
       search: "",
       tab: null,
       loader: false,
+      image: null,
       ip: "",
       editInfo: false,
       showMessage: false,
@@ -391,8 +478,8 @@ export default {
     };
   },
   computed: {
-    ...mapState("Session", ["barrels", "workers", "placeInfo"]),
-    ...mapState("Lines", ["beers", "kegs", "lines"]),
+    ...mapState("Session", ["barrels", "workers", "placeInfo", "BASE_URL"]),
+    ...mapState("Lines", ["beers", "kegs", "lines", "emergencyCard"]),
     ...mapState("Stock", ["stock"]),
     config() {
       return config;
@@ -405,6 +492,15 @@ export default {
   methods: {
     closeAddEmergencyCard() {
       this.emergencyCardModal = false;
+    },
+    closeEditInfo() {
+      this.editInfo = false;
+      this.name = this.placeInfo.name;
+      this.branch = this.placeInfo.branch;
+      this.facebook = this.placeInfo.facebook;
+      this.instagram = this.placeInfo.instagram;
+      this.twitter = this.placeInfo.twitter;
+      this.image = { imageURL: this.BASE_URL + "/placeLogo" };
     },
     download() {
       var download = document.getElementById("download");
@@ -471,14 +567,29 @@ export default {
       });
     },
     async editPlaceInfo() {
-      const { name, branch, facebook, instagram, twitter } = this;
-
+      const { name, branch, facebook, instagram, twitter, image } = this;
+      const formData = new FormData();
       this.loader = true;
-      var dataToSend = { name, branch, facebook, instagram, twitter };
-      let response = await Api().post("/editPlaceInfo", dataToSend);
+      image
+        ? image.imageFile
+          ? formData.append("file", image.imageFile)
+          : null
+        : null;
+      formData.append("name", name);
+      formData.append("branch", branch);
+      formData.append("facebook", facebook);
+      formData.append("instagram", instagram);
+      formData.append("twitter", twitter);
+      let response = await Api().post("/editPlaceInfo", formData);
       this.loader = false;
       if (response.data.confirmation) {
-        this.$store.dispatch("Session/setPlaceInfo", dataToSend);
+        this.$store.dispatch("Session/setPlaceInfo", {
+          name,
+          branch,
+          facebook,
+          instagram,
+          twitter
+        });
         this.editInfo = false;
       } else {
         console.log(response.data);
@@ -492,7 +603,7 @@ export default {
     this.facebook = this.placeInfo.facebook;
     this.instagram = this.placeInfo.instagram;
     this.twitter = this.placeInfo.twitter;
-    console.log(this.name);
+    this.image = { imageURL: this.BASE_URL + "/placeLogo" };
     try {
       const address = await config.BASE_URL();
       this.ip = "HTTP://" + address + ":5000";
@@ -519,6 +630,7 @@ export default {
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
+@import "@/assets/styles/components";
 .config {
   position: relative;
   flex: 1;
@@ -528,6 +640,20 @@ export default {
   overflow: scroll;
   background: rgb(244, 245, 249);
   padding-top: 0px;
+  .image-picker {
+    background-color: transparent;
+    height: 192px;
+    width: 170px;
+    overflow: visible;
+  }
+  .image-wrapper {
+    display: flex;
+    overflow: visible;
+    width: 160px;
+    height: 160px;
+    justify-content: center;
+    align-items: center;
+  }
   .titleWrapper {
     z-index: 1;
     position: sticky;
@@ -545,8 +671,14 @@ export default {
     height: 100%;
   }
   .card {
-    width: 130px;
+    height: 200px !important;
     margin-top: 20px;
+    margin-right: 10px;
+  }
+  .server {
+    height: 90px !important;
+    margin-top: 65px;
+    margin-right: 10px;
   }
   .mx-2 {
     position: absolute;

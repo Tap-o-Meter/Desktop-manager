@@ -40,11 +40,23 @@
           <v-col cols="3" class="ml-auto">
             <v-select
               dense
+              v-if="tab === 0"
+              v-model="orden"
               background-color="white"
-              placeholder="Ordenar: # de Linea"
+              placeholder="# de Linea"
               :items="sortBy"
-              item-text="noLinea"
-              item-value="_id"
+              prefix="Ordenar: "
+              solo
+              flat
+            />
+            <v-select
+              dense
+              v-else
+              v-model="ordenBeer"
+              background-color="white"
+              placeholder="A-Z"
+              :items="sortByBeer"
+              prefix="Ordenar: "
               solo
               flat
             />
@@ -52,12 +64,25 @@
           <v-col cols="3">
             <v-select
               dense
+              v-if="tab === 0"
+              v-model="filtro"
               background-color="white"
-              placeholder="Categoría: Todas"
-              :items="categorias"
-              item-text="noLinea"
-              item-value="_id"
+              placeholder="Todas"
+              :items="filters"
               label="Filtrar"
+              prefix="Categoría: "
+              solo
+              flat
+            />
+            <v-select
+              dense
+              v-else
+              v-model="filtroBeer"
+              background-color="white"
+              placeholder="Todas"
+              :items="filtersBeer"
+              label="Filtrar"
+              prefix="Categoría: "
               solo
               flat
             />
@@ -66,23 +91,56 @@
       </v-container>
     </v-tabs>
 
-    <v-tabs-items v-model="tab" class="transparent">
-      <v-tab-item background-color="white">
-        <div class="d-flex flex-wrap justify-center">
-          <BarrelCell
-            v-for="(line, index) in onChange(search)"
-            :key="index"
-            :line="line"
-          />
-        </div>
+    <v-tabs-items
+      v-model="tab"
+      class="transparent"
+      style="overflow:visible !important; "
+    >
+      <v-tab-item
+        background-color="white"
+        style=" overflow-x: hidden; overflow-y: hidden;"
+      >
+        <v-container fluid style="height:100%;">
+          <v-layout row wrap style="height:auto">
+            <v-flex
+              xs12
+              sm12
+              md6
+              lg4
+              xl3
+              class="align-center justify-center d-flex"
+              v-for="(line, index) in onChange(search, orden, filtro)"
+              :key="index"
+            >
+              <BarrelCell :line="line" />
+            </v-flex>
+          </v-layout>
+        </v-container>
       </v-tab-item>
-      <v-tab-item>
-        <div class="d-flex flex-wrap justify-center">
-          <KegCell
-            v-for="(beer, index) in onChangeBeer(searchBeer)"
-            :keg="beer"
-          />
-        </div>
+      <v-tab-item
+        background-color="white"
+        style=" overflow-x: hidden; overflow-y: hidden;"
+      >
+        <v-container fluid style="height:100%;">
+          <v-layout row wrap style="height:auto">
+            <v-flex
+              xs12
+              sm12
+              md6
+              lg4
+              xl3
+              class="align-center justify-center d-flex"
+              v-for="(beer, index) in onChangeBeer(
+                searchBeer,
+                ordenBeer,
+                filtroBeer
+              )"
+              :key="index"
+            >
+              <KegCell :keg="beer" />
+            </v-flex>
+          </v-layout>
+        </v-container>
       </v-tab-item>
     </v-tabs-items>
 
@@ -97,7 +155,7 @@
       <v-icon dark>mdi-plus</v-icon>
     </v-btn>
     <AddBeer :open="beerDialog" :handleClose="showModal" />
-    <AddKeg :open="kegDialog" :handleClose="showAddKeg" />
+    <AddKeg :open="kegDialog" :handleClose="showAddKeg" :preBeer="preBeer" />
     <ConnectLine :open="lineDialog" :handleClose="showConnectLine" />
     <MultipleOptions
       :open="multiple"
@@ -132,12 +190,42 @@ export default {
       search: "",
       searchBeer: "",
       tab: null,
-      categorias: ["Todas", "Conectados", "Desconectados", "Críticos"],
-      sortBy: ["# de Línea", "Menor cantidad", "Mayor cantidad", "Estilos"],
+      preBeer: null,
       kegDialog: false,
       beerDialog: false,
       lineDialog: false,
       multiple: false,
+      filtro: "",
+      orden: "",
+      filters: [
+        "Todos",
+        "Críticos",
+        "Conectados",
+        "Desconectados",
+        "De la casa",
+        "Invitadas"
+      ],
+      sortBy: [
+        "# de línea",
+        "A-Z",
+        "Por Estilo",
+        "+ ABV",
+        "- ABV",
+        "Color",
+        "Menor Cant.",
+        "Mayor Cant."
+      ],
+      filtroBeer: "",
+      ordenBeer: "",
+      filtersBeer: [
+        "Todos",
+        "No Disponibles",
+        "Disponibles",
+        "Con Etiqueta",
+        "De la casa",
+        "Invitadas"
+      ],
+      sortByBeer: ["A-Z", "Por Estilo", "+ ABV", "Color", "Mayor Inventario"],
       options: [
         {
           icon: "$addBarrel",
@@ -162,13 +250,16 @@ export default {
   },
   computed: {
     ...mapState("Lines", ["kegs", "connectedLines", "lines", "beers"]),
-    ...mapGetters("Lines", ["getKeg", "getBeer"])
+    ...mapGetters("Lines", ["getKeg", "getBeer", "getStatus", "getKegCount"])
   },
   methods: {
-    showModal(value) {
+    showModal(value, beer) {
       this.beerDialog = value;
+      if (beer) this.showAddKeg(true, beer);
     },
-    showAddKeg(value) {
+    showAddKeg(value, beer) {
+      if (beer) this.preBeer = beer;
+      else this.preBeer = null;
       this.kegDialog = value;
     },
     showConnectLine(value) {
@@ -177,22 +268,174 @@ export default {
     showOptions(value) {
       this.multiple = value;
     },
-    onChange(search) {
+    onChange(search, orden, filtro) {
+      const { getBeer, getKeg, getStatus } = this;
       if (this.tab === 0) {
-        return this.lines.filter(line => {
+        const filteredByName = this.lines.filter(line => {
           if (line.idKeg.length > 1) {
             return this.getBeer(this.getKeg(line.idKeg).beerId)
               .name.toUpperCase()
               .includes(search.toUpperCase());
           }
         });
+        const sortBy = filteredByName.sort(function(a, b) {
+          switch (orden) {
+            case "# de Línea":
+              return a.noLinea - b.noLinea;
+              break;
+            case "A-Z":
+              if (a.idKeg.length > 1 && b.idKeg.length > 1) {
+                const Abeer = getBeer(getKeg(a.idKeg).beerId);
+                const Bbeer = getBeer(getKeg(b.idKeg).beerId);
+                let x = Abeer.name.toUpperCase(),
+                  y = Bbeer.name.toUpperCase();
+                return x == y ? 0 : x > y ? 1 : -1;
+              }
+              break;
+            case "Por Estilo":
+              if (a.idKeg.length > 1 && b.idKeg.length > 1) {
+                const Abeer = getBeer(getKeg(a.idKeg).beerId);
+                const Bbeer = getBeer(getKeg(b.idKeg).beerId);
+                let x = Abeer.style.toUpperCase(),
+                  y = Bbeer.style.toUpperCase();
+                return x == y ? 0 : x > y ? 1 : -1;
+              }
+              break;
+            case "+ ABV":
+              if (a.idKeg.length > 1 && b.idKeg.length > 1) {
+                const Abeer = getBeer(getKeg(a.idKeg).beerId);
+                const Bbeer = getBeer(getKeg(b.idKeg).beerId);
+                let x = Abeer.abv,
+                  y = Bbeer.abv;
+                return y - x;
+              }
+              break;
+            case "- ABV":
+              if (a.idKeg.length > 1 && b.idKeg.length > 1) {
+                const Abeer = getBeer(getKeg(a.idKeg).beerId);
+                const Bbeer = getBeer(getKeg(b.idKeg).beerId);
+                let x = Abeer.abv,
+                  y = Bbeer.abv;
+                return x - y;
+              }
+              break;
+            case "Color":
+              if (a.idKeg.length > 1 && b.idKeg.length > 1) {
+                const Abeer = getBeer(getKeg(a.idKeg).beerId);
+                const Bbeer = getBeer(getKeg(b.idKeg).beerId);
+                let x = Abeer.srm,
+                  y = Bbeer.srm;
+                return x - y;
+              }
+              break;
+            case "Menor Cant.":
+              if (a.idKeg.length > 1 && b.idKeg.length > 1) {
+                const Abeer = getKeg(a.idKeg).available;
+                const Bbeer = getKeg(b.idKeg).available;
+                return Abeer - Bbeer;
+              }
+              break;
+            case "Mayor Cant.":
+              if (a.idKeg.length > 1 && b.idKeg.length > 1) {
+                const Abeer = getKeg(a.idKeg).available;
+                const Bbeer = getKeg(b.idKeg).available;
+                return Bbeer - Abeer;
+              }
+              break;
+            default:
+              return a.noLinea - b.noLinea;
+          }
+        });
+        const applyedFilter = sortBy.filter(line => {
+          switch (filtro) {
+            case "Criticos":
+              if (line.idKeg.length) {
+                const keg = getKeg(line.idKeg);
+                return keg.available <= 4;
+              }
+              break;
+            case "Conectados":
+              return getStatus(line);
+              break;
+            case "Desconectados":
+              return !getStatus(line);
+              break;
+            case "De la casa":
+              if (line.idKeg.length) {
+                const beer = getBeer(getKeg(line.idKeg).beerId);
+                return beer.brand === "Local";
+              }
+              break;
+            case "Invitadas":
+              if (line.idKeg.length) {
+                const beer = getBeer(getKeg(line.idKeg).beerId);
+                return beer.brand !== "Local";
+              }
+              break;
+            default:
+              return true;
+          }
+        });
+        return applyedFilter;
       }
     },
-    onChangeBeer(search) {
+    onChangeBeer(search, orden, filtro) {
       if (this.tab === 1) {
-        return this.beers.filter(beer =>
+        const { getKegCount } = this;
+        const filteredByName = this.beers.filter(beer =>
           beer.name.toUpperCase().includes(search.toUpperCase())
         );
+        const sortBy = filteredByName.sort((a, b) => {
+          switch (orden) {
+            case "A-Z":
+              let aName = a.name.toUpperCase(),
+                bName = b.name.toUpperCase();
+              return aName == bName ? 0 : aName > bName ? 1 : -1;
+              break;
+            case "Por Estilo":
+              let aStyle = a.style.toUpperCase(),
+                bStyle = b.style.toUpperCase();
+              return aStyle == bStyle ? 0 : aStyle > bStyle ? 1 : -1;
+              break;
+            case "+ ABV":
+              return b.abv - a.abv;
+              break;
+            case "Color":
+              return a.srm - b.srm;
+              break;
+            case "Mayor Inventario":
+              const Abeer = getKegCount(a._id);
+              const Bbeer = getKegCount(b._id);
+              return Bbeer - Abeer;
+              break;
+            default:
+              let x = a.name.toUpperCase(),
+                y = b.name.toUpperCase();
+              return x == y ? 0 : x > y ? 1 : -1;
+          }
+        });
+        const applyedFilter = sortBy.filter(beer => {
+          switch (filtro) {
+            case "No Disponibles":
+              return getKegCount(beer._id) == 0;
+              break;
+            case "Disponibles":
+              return getKegCount(beer._id) > 0;
+              break;
+            case "Con Etiqueta":
+              return beer.image;
+              break;
+            case "De la casa":
+              return beer.brand === "Local";
+              break;
+            case "Invitadas":
+              return beer.brand !== "Local";
+              break;
+            default:
+              return true;
+          }
+        });
+        return applyedFilter;
       }
     }
   }
@@ -201,6 +444,7 @@ export default {
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
+@import "@/assets/styles/components";
 .barrelsWrapper {
   flex: 1;
   width: 100%;

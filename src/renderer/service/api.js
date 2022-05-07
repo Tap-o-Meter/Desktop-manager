@@ -1,8 +1,13 @@
 import axios from "axios";
-const baseURL = "http://beer-control.local:3000";
-export { baseURL };
+import config from "../config";
+
+var realIp = "";
+export function SetIp(ip) {
+  realIp = ip;
+}
 
 export default () => {
+  const baseURL = "http://" + realIp + ":3000";
   return axios.create({
     baseURL,
     headers: {

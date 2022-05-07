@@ -1,6 +1,7 @@
-import Api from "../../service/api";
+import Api, { SetIp } from "../../service/api";
 
 const state = {
+  BASE_URL: "",
   loggedIn: false,
   connectionStatus: false,
   workers: [],
@@ -18,6 +19,7 @@ const mutations = {
     return (state.loggedIn = user);
   },
   SET_WORKERS(state, response) {
+    console.warn(response);
     return (state.workers = response);
   },
   UPDATE_WORKER(state, workerUpdated) {
@@ -37,6 +39,10 @@ const mutations = {
   },
   DISCONNECTED(state) {
     state.connectionStatus = false;
+  },
+  SET_URL(state, url) {
+    SetIp(url);
+    state.BASE_URL = "http://" + url + ":3000";
   }
 };
 
@@ -63,6 +69,9 @@ const actions = {
   },
   disconnected({ commit }) {
     commit("DISCONNECTED");
+  },
+  setURL({ commit }, URL) {
+    commit("SET_URL", URL);
   }
 };
 

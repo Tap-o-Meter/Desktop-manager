@@ -1,9 +1,12 @@
-import { app, BrowserWindow } from "electron"; // eslint-disable-line
+import { app, BrowserWindow, globalShortcut } from "electron"; // eslint-disable-line
 import store from "../renderer/store";
+const { Menu, MenuItem } = require("electron");
+const menu = new Menu();
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
+
 if (process.env.NODE_ENV !== "development") {
   global.__static = require("path")
     .join(__dirname, "/static")
@@ -31,13 +34,48 @@ function createWindow() {
 
   mainWindow.loadURL(winURL);
   mainWindow.maximize();
-
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
-app.on("ready", createWindow);
+app.on("ready", () => {
+  var template = [
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" }
+      ]
+    },
+    {
+      label: "View",
+      submenu: [
+        { label: "Reset Zoom", role: "resetzoom" },
+        { label: "Zoom In", role: "zoomin" },
+        { label: "Zoom Out", role: "zoomout" }
+      ]
+    }
+    // {
+    //     label: 'Help', submenu: [
+    //       { role: 'reload' },
+    //       { role: 'toggleFullScreen' },
+    //       { role: 'toggleDevTools' },
+    //     ],
+    //   }
+  ];
+  process.platform === "darwin"
+    ? template.unshift({
+        label: "File",
+        submenu: [{ type: "separator" }, { label: "Quit", role: "quit" }]
+      })
+    : null;
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  createWindow();
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

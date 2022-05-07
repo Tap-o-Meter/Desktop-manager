@@ -12,7 +12,7 @@
     <v-list nav class="py-0" style="height:100vh;">
       <v-list-item two-line class="pt-8 pl-0">
         <v-list-item-avatar class="mt-1 mb-1 mr-1" size="60">
-          <v-img contain src="http://beer-control.local:3000/placeLogo/" />
+          <v-img contain :src="BASE_URL + '/placeLogo'" />
         </v-list-item-avatar>
 
         <v-list-item-content>
@@ -95,7 +95,7 @@ export default {
   },
   computed: {
     ...mapState("CardReader", ["connected"]),
-    ...mapState("Session", ["placeInfo"])
+    ...mapState("Session", ["placeInfo", "BASE_URL"])
   },
   mounted() {
     window.onresize = () => {

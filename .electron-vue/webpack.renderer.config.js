@@ -20,7 +20,7 @@ const VuetifyLoaderPlugin = require("vuetify-loader/lib/plugin");
  * that provide pure *.vue files that need compiling
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/webpack-configurations.html#white-listing-externals
  */
-let whiteListedModules = ["vue", "vuetify"];
+let whiteListedModules = ["vue", "vuetify", "lottie-vuejs"];
 
 let rendererConfig = {
   devtool: "#cheap-module-eval-source-map",
@@ -163,13 +163,13 @@ let rendererConfig = {
 /**
  * Adjust rendererConfig for development settings
  */
-if (process.env.NODE_ENV !== "production") {
-  rendererConfig.plugins.push(
-    new webpack.DefinePlugin({
-      __static: `"${path.join(__dirname, "../static").replace(/\\/g, "\\\\")}"`
-    })
-  );
-}
+// if (process.env.NODE_ENV !== "production") {
+//   rendererConfig.plugins.push(
+//     new webpack.DefinePlugin({
+//       __static: `"${path.join(__dirname, "../static").replace(/\\/g, "\\\\")}"`
+//     })
+//   );
+// }
 
 /**
  * Adjust rendererConfig for production settings

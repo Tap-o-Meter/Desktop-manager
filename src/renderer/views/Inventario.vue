@@ -1,5 +1,5 @@
 <template>
-  <div class="stockWrapper d-flex flex-column">
+  <div class="stockWrapper d-flex flex-column no-scroll">
     <div
       class="titleWrapper d-flex pl-5 pr-5 align-center justify-space-between"
     >
@@ -21,29 +21,6 @@
               prepend-inner-icon="mdi-magnify"
             />
           </v-col>
-          <v-col cols="2" class="ml-auto">
-            <v-select
-              dense
-              background-color="#f5f5f5"
-              placeholder="Ordenar: # Linea"
-              item-text="noLinea"
-              item-value="_id"
-              solo
-              flat
-            />
-          </v-col>
-          <v-col cols="2">
-            <v-select
-              dense
-              background-color="#f5f5f5"
-              placeholder="Categoría: Todas"
-              item-text="noLinea"
-              item-value="_id"
-              label="Filtrar"
-              solo
-              flat
-            />
-          </v-col>
         </v-row>
       </v-container>
       <v-data-table
@@ -63,7 +40,7 @@
               style="object-fit: contain;"
               :src="
                 item.image !== null
-                  ? 'http://beer-control.local:3000/getImage/' + item.image
+                  ? BASE_URL + '/getImage/' + item.image
                   : require('@/assets/no-image.svg')
               "
               contain
@@ -244,7 +221,10 @@ export default {
       ]
     };
   },
-  computed: { ...mapState("Stock", ["stock"]) },
+  computed: {
+    ...mapState("Stock", ["stock"]),
+    ...mapState("Session", ["BASE_URL"])
+  },
   methods: {
     addExtractQty(extract) {
       this.isExtracting = extract;
@@ -296,6 +276,7 @@ export default {
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
+    @import "@/assets/styles/components";
 .stockWrapper {
   position: relative;
   flex: 1;

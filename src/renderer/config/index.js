@@ -1,12 +1,18 @@
 import dns from "dns";
 export default {
   BASE_URL: async function() {
-    return new Promise((resolve, reject) => {
-      dns.lookup("beer-control.local", (err, address, family) => {
-        if (err) reject(err);
-        resolve(address);
-      });
-    });
+    return "192.168.1.121";
+    // new Promise((resolve, reject) => {
+    //   dns.lookup("beer-control.local", (err, address, family) => {
+    //     if (err) reject(err);
+    //     resolve(address);
+    //   });
+    // });
+  },
+  animations: {
+    nfc: require("../assets/lottie/nfc.json"),
+    connect: require("../assets/lottie/connect-device.json"),
+    check: require("../assets/lottie/green-check.json")
   },
   days: {
     domingo: 0,
@@ -31,6 +37,10 @@ export default {
     { name: "Noviembre", value: 10 },
     { name: "Diciembre", value: 11 }
   ],
+  currentMonth: function() {
+    const d = new Date();
+    return this.months[d.getMonth()];
+  },
   ToString: function(date) {
     var time = new Date(date);
     return (
@@ -133,10 +143,5 @@ export default {
     { color: "#3A070B", srm: "39" },
     { color: "#36080A", srm: "40" }
   ],
-  cardLevels: [
-    "Bebedor social",
-    "Chikilla es mi Hobby",
-    "El Alcohólico",
-    "El Chikilla"
-  ]
+  cardLevels: ["Bebedor Social", "Mi Hobby", "El Alcohólico", "El Chikilla"]
 };

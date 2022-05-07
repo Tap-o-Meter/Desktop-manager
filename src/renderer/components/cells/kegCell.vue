@@ -13,7 +13,7 @@
       :lazy-src="require('@/assets/no-beer.svg')"
       :src="
         keg.image !== null
-          ? 'http://beer-control.local:3000/getImage/' + keg.image
+          ? BASE_URL + '/getImage/' + keg.image
           : require('@/assets/no-beer.svg')
       "
     >
@@ -37,7 +37,7 @@
   </v-card>
 </template>
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 export default {
   name: "kegCell",
   props: {
@@ -45,6 +45,7 @@ export default {
   },
   computed: {
     ...mapGetters("Lines", ["getKegCount"]),
+    ...mapState("Session", ["BASE_URL"]),
     count() {
       return this.getKegCount(this.keg._id);
     }

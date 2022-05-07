@@ -32,10 +32,7 @@
                             class="mr-3"
                           >
                             <v-img
-                              :src="
-                                'http://beer-control.local:3000/getImage/' +
-                                  data.item.image
-                              "
+                              :src="BASE_URL + '/getImage/' + data.item.image"
                             />
                           </v-avatar>
                           {{ data.item.name }}
@@ -215,11 +212,25 @@ export default {
   },
   props: {
     open: Boolean,
+    preBeer: Object,
     handleClose: Function
   },
   computed: {
-    ...mapState("Lines", ["beers"])
+    ...mapState("Lines", ["beers"]),
+    ...mapState("Session", ["BASE_URL"])
   },
+  watch: {
+    open: function(newVal, oldVal) {
+      if (newVal) {
+        if (this.preBeer) {
+          this.beerId = this.preBeer._id;
+          this.abv = this.preBeer.abv;
+          this.ibu = this.preBeer.ibu;
+        }
+      }
+    }
+  },
+
   methods: {
     toggleMarker() {
       this.marker = !this.marker;
@@ -246,7 +257,7 @@ export default {
           ibu
         });
         this.loader = false;
-        if (response.data.confirmation) {
+        if (response.data.confirmation === "success") {
           console.log(response.data);
           this.$store.dispatch("Lines/addKeg", { ...response.data.data, cant });
           this.closeModal();

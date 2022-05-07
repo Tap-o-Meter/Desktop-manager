@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard d-flex flex-column">
+  <div class="dashboard d-flex flex-column custom-scroll">
     <div
       class="titleWrapper d-flex pl-5 pr-5 align-center justify-space-between"
     >
@@ -162,8 +162,83 @@
               dark
               :img="require('../assets/backgroundCard.svg')"
             >
-              <v-card-text>
-                <div>Word of the Day</div>
+              <v-card-title>
+                <v-icon size="32" left v-html="'mdi-star'" />
+                <span class="title font-weight-light">Top de trabajadores</span>
+              </v-card-title>
+              <v-card-text
+                v-if="topWorkers[0]"
+                class="d-flex flex-column align-center px-0 no-scroll"
+                style="overflow: scroll; max-height:355px; overflow-x: hidden;"
+              >
+                <v-avatar color="blue" size="130" style="min-height: 130px">
+                  <v-img
+                    :src="BASE_URL + '/getImage/' + topWorkers[0].foto"
+                    v-if="topWorkers[0].foto"
+                  />
+                  <span class="white--text header-fg-alt" v-else>
+                    {{
+                      topWorkers[0].nombre.charAt(0) +
+                        topWorkers[0].apellidos.charAt(0)
+                    }}
+                  </span>
+                </v-avatar>
+                <span
+                  class="header-4-alt light mt-2 thin"
+                  v-html="
+                    '<b>1.-</b>' +
+                      topWorkers[0].nombre +
+                      ' ' +
+                      topWorkers[0].apellidos
+                  "
+                />
+
+                <p class="header-3-alt light">{{ topWorkers[0].qty + " L" }}</p>
+                <v-list subheader two-line color="transparent">
+                  <v-divider color="gray" class="mx-4" />
+                  <v-list-item
+                    v-for="(worker, index) in topWorkers"
+                    v-if="index > 0"
+                    :key="worker._id"
+                  >
+                    {{ index + 1 + ".-" }}
+                    <v-list-item-avatar class="ml-2" color="grey">
+                      <v-img
+                        :src="BASE_URL + '/getImage/' + worker.foto"
+                        v-if="worker.foto"
+                      />
+                      <span class="white--text header-5-alt" v-else>
+                        {{
+                          worker.nombre.charAt(0) + worker.apellidos.charAt(0)
+                        }}
+                      </span>
+                    </v-list-item-avatar>
+
+                    <v-list-item-content>
+                      <v-list-item-title
+                        v-text="worker.nombre + ' ' + worker.apellidos"
+                      />
+
+                      <v-list-item-subtitle
+                        v-html="'cant. <b>' + worker.qty + '</b> Lts.'"
+                      />
+                    </v-list-item-content>
+
+                    <v-list-item-action>
+                      <v-btn
+                        icon
+                        :to="{
+                          name: 'worker-details',
+                          params: { worker: worker }
+                        }"
+                      >
+                        <v-icon color="grey lighten-1" v-text="'mdi-magnify'" />
+                      </v-btn>
+                    </v-list-item-action>
+                  </v-list-item>
+                </v-list>
+                <!-- {{ this.topWorkers }} -->
+                <!-- <div>Word of the Day</div>
                 <p class="display-1 text--white">
                   be•nev•o•lent
                 </p>
@@ -171,14 +246,8 @@
                 <div class="text--white">
                   well meaning and kindly.<br />
                   "a benevolent smile"
-                  {{ this.getWhereTheFuckIam }}
-                </div>
+                </div> -->
               </v-card-text>
-              <v-card-actions>
-                <v-btn text dark>
-                  Learn More
-                </v-btn>
-              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
@@ -187,7 +256,11 @@
       <div class="workersWrapper flex-column align-start justify-start mt-5">
         <span class="ml-7 header-3-alt ultra-thin">Trabajadores</span>
         <div class=" workersList d-flex pt-1 pb-3 align-end">
-          <WorkerCell v-for="worker in workers" :worker="worker" class="mr-5" />
+          <WorkerCell
+            v-for="worker in formatWorkers"
+            :worker="worker"
+            class="mr-5"
+          />
         </div>
       </div>
     </div>
@@ -204,7 +277,9 @@ export default {
     return {
       indexKeg: 0,
       search: "",
-      cards: []
+      cards: [],
+      topWorkers: [],
+      totalSold: 0
     };
   },
   methods: {
@@ -219,18 +294,37 @@ export default {
     }
   },
   computed: {
-    getWhereTheFuckIam() {
-      var fs = require("fs");
-      var files = fs.readdirSync(__static + "/lottie");
-      return files;
-    },
-    ...mapState("Session", ["workers"]),
+    ...mapState("Session", ["workers", "BASE_URL"]),
     ...mapState("Lines", ["lines"]),
+    ...mapState("Sales", ["sales"]),
+    ...mapGetters("Sales", ["getSalesByWorker"]),
+    ...mapGetters("Stock", ["getCriticalStock"]),
     ...mapGetters("Lines", ["getKeg", "getBeer", "getCriticalKegs"]),
     keg() {
       const { getKeg, lines, indexKeg } = this;
       return getKeg(lines[indexKeg].idKeg);
     },
+
+    formatWorkers() {
+      if (this.sales !== null) {
+        const workersSales = [];
+        var totalSold = 0;
+        this.getSalesByWorker(this.workers).forEach((item, i) => {
+          workersSales.push({
+            ...this.workers[i],
+            qty: item
+          });
+          totalSold += parseFloat(item);
+        });
+
+        // workersSales.sort(function(a, b) {
+        //   return b.qty - a.qty;
+        // });
+        this.totalSold = totalSold.toFixed(2);
+        return workersSales;
+      } else return [];
+    },
+
     chips() {
       const cards = [];
       cards.push({
@@ -243,6 +337,7 @@ export default {
         href: "workers"
       });
       var criticalKegs = this.getCriticalKegs;
+      var criticalStock = this.getCriticalStock;
       cards.push({
         icon: "mdi-keg",
         color: "redGradient",
@@ -256,10 +351,10 @@ export default {
         href: "barrels"
       });
       cards.push({
-        icon: "mdi-currency-usd",
+        icon: "$beerTap",
         color: "yellowgradient",
-        type: "GANANCIAS",
-        data: "$12,000",
+        type: "VENTAS",
+        data: this.totalSold + "L",
         message: "",
         miniIcon: "",
         href: "sales"
@@ -268,19 +363,34 @@ export default {
         icon: "mdi-clipboard-list",
         color: "greenGradient",
         type: "INVENTARIO",
-        data: "2",
-        message: "Malta Pale Ale Weyermann 5 kg",
-        miniIcon: "mdi-alert",
+        data: criticalStock.length,
+        message: criticalStock.length > 0 ? criticalStock[0].name : "",
+        miniIcon: criticalStock.length > 0 ? "mdi-alert" : "",
         href: "inventario"
       });
       return cards;
     }
   },
   beforeMount: function() {
-    socket.emit("client connected");
+    this.$store.dispatch("Sales/getSales");
     this.$store.dispatch("Session/getWorkers");
     this.$store.dispatch("Stock/getStock");
+    socket().emit("client connected");
     connectPort(null, this.$store);
+  },
+  watch: {
+    sales: function(newVal, oldVal) {
+      if (newVal !== null) {
+        const workersSales = [];
+        this.getSalesByWorker(this.workers).forEach((item, i) => {
+          workersSales.push({ ...this.workers[i], qty: item });
+        });
+        workersSales.sort(function(a, b) {
+          return b.qty - a.qty;
+        });
+        this.topWorkers = workersSales;
+      }
+    }
   }
 };
 </script>
@@ -348,6 +458,7 @@ export default {
     .workersList {
       overflow: scroll;
       min-height: 180px;
+      overflow-y: hidden;
     }
   }
 }

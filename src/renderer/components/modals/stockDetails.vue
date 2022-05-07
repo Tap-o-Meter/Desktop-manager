@@ -118,6 +118,7 @@
 import Api from "../../service/api";
 import axios from "axios";
 import ImageInput from "../form/ImageInput.vue";
+import { mapState } from "vuex";
 export default {
   name: "AddWorker",
   components: {
@@ -143,6 +144,7 @@ export default {
     item: Object
   },
   computed: {
+    ...mapState("Session", ["BASE_URL"]),
     names() {
       return this.$store.getters["Stock/getNames"];
     },
@@ -161,7 +163,7 @@ export default {
         this.name = newVal.name;
         this.image =
           newVal.image !== null
-            ? "http://beer-control.local:3000/getImage/" + newVal.image
+            ? this.BASE_URL + "/getImage/" + newVal.image
             : null;
       }
     }

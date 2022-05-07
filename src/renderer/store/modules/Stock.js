@@ -39,6 +39,7 @@ const mutations = {
 const actions = {
   async getStock({ commit }) {
     let response = await Api().get("/getStock");
+    console.warn("obteniendo il inventatio");
     commit("SET_STOCK", response.data.data);
   },
   addStock({ commit }, stock) {
@@ -72,6 +73,9 @@ const getters = {
   },
   getItem: state => itemId => {
     return state.stock.find(item => item._id === itemId);
+  },
+  getCriticalStock: state => {
+    return state.stock.filter(item => item.volume <= item.min_product);
   }
 };
 

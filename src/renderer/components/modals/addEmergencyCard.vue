@@ -12,13 +12,7 @@
         <v-card-text>
           <v-container fluid>
             <v-row class="row-container">
-              <lottie-animation
-                :class="animationClass"
-                :path="animation"
-                :loop="loop"
-                :autoPlay="true"
-                :speed="1"
-              />
+              <div id="animation" :class="animationClass"></div>
               <span class="header-3-alt thin msg" v-text="message" />
             </v-row>
           </v-container>
@@ -62,21 +56,22 @@ import Api from "../../service/api";
 import { mapState } from "vuex";
 import { suscribe, unsuscribe } from "../../api/index.js";
 import ConnectDevice from "./connectDevice";
-import LottieAnimation from "lottie-vuejs/src/LottieAnimation.vue"; // import lottie-vuejs
+import config from "../../config";
+import lottie from "lottie-web";
 export default {
   name: "AddWorker",
-  components: { ConnectDevice, LottieAnimation },
+  components: { ConnectDevice },
   data() {
     return {
       dialog: false,
       cardId: "",
       loader: false,
-      animation: "",
       animationClass: "",
       loop: true,
       message: "",
+      animation: null,
       animationClasses: ["animation-nfc", "animation-connect", "green-check"],
-      animationList: ["nfc", "connect-device", "green-check"],
+      animationList: ["nfc", "connect", "check"],
       messageList: [
         "Coloque la nueva tarjeta de Emergencia",
         "Favor de conectar el lector",
@@ -89,23 +84,23 @@ export default {
     open: Boolean,
     handleClose: Function
   },
-
   beforeMount: function() {
     const option = this.connected ? 0 : 1;
     this.animationClass = this.animationClasses[option];
-    this.animation = this.getAnimation(option);
+    this.getAnimation(option);
     this.message = this.messageList[option];
   },
   watch: {
     open: function(newVal, oldVal) {
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       if (newVal) {
+        setTimeout(() => this.getAnimation(this.connected ? 0 : 1), 200);
         suscribe(id => {
           this.cardId = id;
-          this.animation = this.getAnimation(2);
+          this.loop = false;
+          this.getAnimation(2);
           this.animationClass = this.animationClasses[2];
           this.message = this.messageList[2];
-          this.loop = false;
         });
       } else unsuscribe();
     },
@@ -113,7 +108,7 @@ export default {
       const option = newVal ? 0 : 1;
       this.animationClass = this.animationClasses[option];
       this.message = this.messageList[option];
-      this.animation = this.getAnimation(option);
+      this.getAnimation(option);
       if (newVal) this.closeModal();
     }
   },
@@ -122,16 +117,30 @@ export default {
       this.dialog = false;
     },
     getAnimation(index) {
-      return __static + "/lottie/".concat(this.animationList[index], ".json");
+      if (this.animation) this.animation.destroy();
+      this.animation = lottie.loadAnimation({
+        container: document.getElementById("animation"),
+        renderer: "svg",
+        loop: this.loop,
+        autoplay: true,
+        rendererSettings: {
+          scaleMode: "centerCrop",
+          clearCanvas: true,
+          progressiveLoad: false,
+          hideOnTransparent: true
+        },
+        animationData: config.animations[this.animationList[index]]
+      });
+      return 1;
     },
     closeScreen() {
       this.handleClose();
+      this.loop = true;
       const option = this.connected ? 0 : 1;
       this.animationClass = this.animationClasses[option];
-      this.animation = this.getAnimation(option);
+      this.getAnimation(option);
       this.message = this.messageList[option];
       this.cardId = "";
-      this.loop = true;
     },
     async createUser() {
       if (this.$refs.form.validate()) {
@@ -150,7 +159,7 @@ export default {
         formData.append("cardId", cardId);
         let response = await Api().post(url, formData);
         this.loader = false;
-        if (response.data.confirmation) {
+        if (response.data.confirmation === "success") {
           console.log(response.data.data);
           const action = this.worker
             ? "Session/updateWorker"
@@ -161,19 +170,6 @@ export default {
           console.log(response.data);
           console.log("valiste");
         }
-        // this.loader = true;
-        // let response = await Api().post("/addPersonal", {
-        //   nombre: this.nombre,
-        //   apellidos: this.apellidos,
-        //   cardId: this.cardId
-        // });
-        // this.loader = false;
-        // if (response.data.confirmation) {
-        //   this.closeScreen();
-        // } else {
-        //   console.log(response.data);
-        //   console.log("valiste");
-        // }
       }
     }
   }

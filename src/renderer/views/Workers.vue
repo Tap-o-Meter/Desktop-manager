@@ -22,24 +22,30 @@
         <v-col cols="2" class="ml-auto">
           <v-select
             dense
+            v-model="orden"
             background-color="white"
-            placeholder="Ordenar: # Linea"
+            placeholder="# Linea"
             item-text="noLinea"
             item-value="_id"
+            prefix="Ordenar: "
             solo
             flat
+            :items="sortBy"
           />
         </v-col>
         <v-col cols="2">
           <v-select
             dense
+            v-model="filtro"
             background-color="white"
-            placeholder="Categoría: Todas"
+            placeholder="Todas"
             item-text="noLinea"
             item-value="_id"
             label="Filtrar"
+            prefix="Categoría: "
             solo
             flat
+            :items="filters"
           />
         </v-col>
       </v-row>
@@ -53,7 +59,11 @@
           lg3
           xl3
           class="align-center justify-center d-flex"
-          v-for="(worker, index) in onChange(this.search)"
+          v-for="(worker, index) in onChange(
+            this.search,
+            this.orden,
+            this.filtro
+          )"
           :key="index"
         >
           <WorkerCell :worker="worker" />
@@ -78,7 +88,7 @@
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import { WorkerCell } from "../components/cells";
 import { AddWorker } from "../components/modals";
 export default {
@@ -88,23 +98,82 @@ export default {
     return {
       search: "",
       dialog: false,
-      filteredWorkers: []
+      formatedWorkers: [],
+      filteredWorkers: [],
+      filtro: "",
+      orden: "",
+      filters: ["Todos", "Con Horario"],
+      sortBy: ["Antiguedad", "A-Z", "Más Ventas", "Menos Ventas"]
     };
   },
-  computed: { ...mapState("Session", ["workers"]) },
-  beforeMount: function() {
-    this.filteredWorkers = this.workers;
+  computed: {
+    ...mapState("Session", ["workers"]),
+    ...mapState("Sales", ["sales"]),
+    ...mapGetters("Sales", ["getSalesByWorker"]),
+    formatWorkers() {
+      if (this.sales !== null) {
+        const workersSales = [];
+        this.getSalesByWorker(this.workers).forEach((item, i) => {
+          workersSales.push({
+            ...this.workers[i],
+            qty: item
+          });
+        });
+        // workersSales.sort(function(a, b) {
+        //   return b.qty - a.qty;
+        // });
+        return workersSales;
+      } else return [];
+    }
   },
+  beforeMount: function() {
+    this.filteredWorkers = this.formatWorkers;
+  },
+
   methods: {
     closeModal() {
       this.dialog = false;
     },
-    onChange(search) {
-      return this.workers.filter(worker =>
+
+    onChange(search, orden, filtro) {
+      const filteredByName = this.formatWorkers.filter(worker =>
         (worker.nombre + " " + worker.apellidos)
           .toUpperCase()
           .includes(search.toString().toUpperCase())
       );
+      const sortBy = filteredByName.sort(function(a, b) {
+        switch (orden) {
+          case "Antiguedad":
+            return 0;
+            break;
+          case "A-Z":
+            let x = a.nombre.toUpperCase() + " " + a.apellidos.toUpperCase(),
+              y = b.nombre.toUpperCase() + " " + b.apellidos.toUpperCase();
+            return x == y ? 0 : x > y ? 1 : -1;
+            break;
+          case "Más Ventas":
+            return b.qty - a.qty;
+            break;
+          case "Menos Ventas":
+            return a.qty - b.qty;
+            break;
+          default:
+            return 0;
+        }
+      });
+      const applyedFilter = sortBy.filter(worker => {
+        switch (filtro) {
+          case "Todos":
+            return true;
+            break;
+          case "Con Horario":
+            return worker.horario.length > 0;
+            break;
+          default:
+            return true;
+        }
+      });
+      return applyedFilter;
     }
   }
 };

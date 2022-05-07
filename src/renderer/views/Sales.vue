@@ -1,16 +1,38 @@
 <template>
-  <div class="wrapper salesPage d-flex flex-column align-center">
+  <div class="wrapper salesPage d-flex flex-column align-center no-scroll">
     <v-container fluid class="pt-0 ">
       <v-row class="black-gradient bottom-round elevation-5">
-        <v-col cols="12">
+        <v-col cols="12" class="pb-0">
           <div
             class="titleWrapper d-flex pl-5 pr-5 align-center justify-space-between"
           >
             <span class="header-1-alt ultra-thin">Ventas</span>
           </div>
         </v-col>
-        <v-col cols="2">
-          <v-list flat dark height="100%" class="transparent">
+        <v-col cols="12" class="px-8 py-1 d-flex">
+          <div class="">
+            <h2 class="white--text">-Mayo</h2>
+          </div>
+          <v-spacer />
+          <div class="d-flex justify-center align-center" style="width:220px">
+            <v-select
+              :placeholder="currentMonth"
+              :items="months"
+              item-text="name"
+              item-value="value"
+              flat
+              solo
+              dense
+              v-on:change="changeRoute"
+              v-model="period"
+              hide-details
+              background-color="#f5f5f5"
+              prefix="Perido: "
+            ></v-select>
+          </div>
+        </v-col>
+        <v-col cols="2" class="pt-0">
+          <v-list flat dark height="100%" class="transparent pt-0">
             <v-subheader>REPORTES</v-subheader>
             <v-list-item-group v-model="item" class="list-color">
               <v-list-item v-for="(item, i) in items" :key="i">
@@ -24,7 +46,8 @@
             </v-list-item-group>
           </v-list>
         </v-col>
-        <v-col cols="10">
+
+        <v-col cols="10" class="pt-0">
           <LineChart
             :height="330"
             class="mt-5 mb-5"
@@ -59,6 +82,7 @@
               style="height:347px;"
               :items-per-page="5"
               :search="searchWorker"
+              @click:row="gottoWorker"
             >
               <template v-slot:item.nombre="{ item }">
                 {{ item.nombre + " " + item.apellidos }}
@@ -105,6 +129,7 @@
               style="height:347px;"
               :items-per-page="5"
               :search="searchBarrel"
+              @click:row="gottoLine"
             >
               <template v-slot:item.sales="{ item }">
                 <v-chip
@@ -132,6 +157,7 @@
 <script>
 import { LineChart } from "../components/charts";
 import { mapState, mapGetters } from "vuex";
+import config from "../config";
 import Api from "../service/api";
 export default {
   components: { LineChart },
@@ -148,6 +174,17 @@ export default {
     ]),
     lineSales() {
       return this.getCounterByLines(this.lines);
+    },
+    selectedMonth() {
+      return config.months[this.period].name;
+    },
+    currentMonth() {
+      return config.currentMonth().name;
+    },
+    months() {
+      return config.months.filter(
+        month => month.value <= config.currentMonth().value
+      );
     }
   },
   watch: {
@@ -197,13 +234,14 @@ export default {
         { chartName: "Cant. vendida", chartSuffix: "L", chartData: [] },
         { chartName: "Cant. mermada", chartSuffix: "L", chartData: [] },
         { chartName: "Cant. Vendida", chartSuffix: "L", chartData: [] }
-      ]
+      ],
+      period: -1
     };
   },
   methods: {
-    getColor(calories) {
-      if (calories > 200) return "green";
-      else if (calories > 100) return "orange";
+    getColor(sales) {
+      if (sales > 200) return "green";
+      else if (sales > 100) return "orange";
       else return "red";
     },
     getCounter(workerId) {
@@ -211,9 +249,17 @@ export default {
     },
     sum(sales) {
       return sales.growlers + sales.pints;
+    },
+    gottoWorker(value) {
+      this.$router.push({ name: "worker-details", params: { id: value._id } });
+    },
+    gottoLine(value) {
+      console.warn(value);
+      this.$router.push({ name: "line-details", params: { id: value.id } });
     }
   },
   mounted: async function() {
+    this.period = config.currentMonth().value;
     this.$store.dispatch("Sales/getSales");
     this.item = 0;
     this.charts[0].chartData = this.getQtyByLine;
@@ -225,6 +271,8 @@ export default {
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
+@import "@/assets/styles/components";
+
 .wrapper {
   flex: 1;
   min-width: 100%;
@@ -233,6 +281,7 @@ export default {
   overflow: scroll;
   background: rgb(244, 245, 249);
   padding-top: 0px;
+
   .titleWrapper {
     z-index: 1;
     position: sticky;

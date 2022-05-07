@@ -52,7 +52,7 @@ export default new Router({
       component: Workers
     },
     {
-      path: "/worker-details/:id",
+      path: "/worker-details/:worker",
       name: "worker-details",
       component: WorkerDetails,
       params: true

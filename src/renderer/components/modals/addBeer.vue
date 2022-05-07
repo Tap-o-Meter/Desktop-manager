@@ -99,10 +99,26 @@
                       <v-textarea
                         outlined
                         label="Descripción*"
-                        required
                         no-resize
+                        hide-details
                         placeholder="Una cerveza a base de ......."
                       />
+                      <v-checkbox
+                        v-model="addKeg"
+                        class="ma-0 pl-2 pt-7"
+                        :label="'Agregar barriles'"
+                      ></v-checkbox>
+                      <!-- <v-radio-group row class="ma-0 pl-2 pt-7">
+                        <template v-slot:label>
+                          <div class="s-light-subtitles">
+                            Agregar barriles ahora:
+                          </div>
+                        </template>
+                        <div class="d-flex flex-row">
+                          <v-radio label="SRM" :value="true" />
+                          <v-radio label="Personalizado" :value="false" />
+                        </div>
+                      </v-radio-group> -->
                     </v-col>
                     <v-col cols="6">
                       <v-select
@@ -113,6 +129,22 @@
                         label="Tipo*"
                         outlined
                       />
+                      <v-radio-group
+                        v-model="beerColorOpt"
+                        row
+                        class="ma-0 pl-2"
+                      >
+                        <template v-slot:label>
+                          <div class="s-light-subtitles">
+                            Elegir por <strong>SRM</strong> o
+                            <strong>Color</strong>
+                          </div>
+                        </template>
+                        <div class="d-flex flex-row">
+                          <v-radio label="SRM" :value="true" />
+                          <v-radio label="Personalizado" :value="false" />
+                        </div>
+                      </v-radio-group>
                       <v-select
                         v-if="beerColorOpt"
                         v-model="srm"
@@ -160,23 +192,6 @@
                           </v-menu>
                         </template>
                       </v-text-field>
-
-                      <v-radio-group
-                        v-model="beerColorOpt"
-                        row
-                        class="ma-0 pl-2"
-                      >
-                        <template v-slot:label>
-                          <div class="s-light-subtitles">
-                            Elegir por <strong>SRM</strong> o
-                            <strong>Color</strong>
-                          </div>
-                        </template>
-                        <div class="d-flex flex-row">
-                          <v-radio label="SRM" :value="true" />
-                          <v-radio label="Personalizado" :value="false" />
-                        </div>
-                      </v-radio-group>
                     </v-col>
                   </v-row>
                 </v-col>
@@ -206,6 +221,7 @@
 import config from "../../config";
 import Api from "../../service/api";
 import ImageInput from "../form/ImageInput.vue";
+import { mapState } from "vuex";
 export default {
   name: "AddWorker",
   components: {
@@ -221,6 +237,7 @@ export default {
       loader: false,
       marker: true,
       image: null,
+      addKeg: null,
       name: "",
       style: "",
       brand: "",
@@ -254,6 +271,7 @@ export default {
     beer: Object
   },
   computed: {
+    ...mapState("Session", ["BASE_URL"]),
     srmList: function() {
       return config.srmList;
     },
@@ -281,7 +299,7 @@ export default {
       this.srm = this.srmList[this.beer.srm - 1].srm;
       if (this.beer.image) {
         this.image = {
-          imageURL: "http://beer-control.local:3000/getImage/" + this.beer.image
+          imageURL: this.BASE_URL + "/getImage/" + this.beer.image
         };
       }
     }
@@ -316,17 +334,17 @@ export default {
         const path = this.isEditing ? "/editBeer" : "/addBeer";
         let response = await Api().post(path, formData);
         this.loader = false;
-        if (response.data.confirmation) {
+        if (response.data.confirmation === "success") {
           const action = this.isEditing ? "Lines/editBeer" : "Lines/addBeer";
           this.$store.dispatch(action, response.data.data);
-          this.closeModal();
+          this.closeModal(response.data.data);
         } else {
           console.log(response.data);
           console.log("valiste");
         }
       }
     },
-    closeModal() {
+    closeModal(id) {
       this.$refs.form.resetValidation();
       if (!this.isEditing) {
         this.marker = true;
@@ -340,7 +358,8 @@ export default {
         this.descripcion = "";
         this.srm = "";
       }
-      this.handleClose(false);
+      if (this.addKeg) this.handleClose(false, id);
+      else this.handleClose(false);
     }
   }
 };

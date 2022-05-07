@@ -207,7 +207,7 @@ export default {
         formData.append("min_product", min_product);
         let response = await Api().post("/addStock", formData);
         this.loader = false;
-        if (response.data.confirmation) {
+        if (response.data.confirmation === "success") {
           this.$store.dispatch("Stock/addStock", response.data.data);
           this.closeModal();
         } else {

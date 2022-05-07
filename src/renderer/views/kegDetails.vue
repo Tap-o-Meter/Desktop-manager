@@ -1,5 +1,5 @@
 <template>
-  <div class="kegDetails">
+  <div class="kegDetails no-scroll">
     <v-container fluid class="pa-0 ">
       <v-col
         class="black-gradient bottom-round elevation-5 pa-0"
@@ -25,7 +25,7 @@
             height="300"
             :src="
               keg.image !== null
-                ? 'http://beer-control.local:3000/getImage/' + keg.image
+                ? BASE_URL + '/getImage/' + keg.image
                 : require('@/assets/no-beer.svg')
             "
           />
@@ -189,7 +189,7 @@
   </div>
 </template>
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 import config from "../config";
 import { KegDetails, AddBeer } from "../components/modals";
 export default {
@@ -216,6 +216,7 @@ export default {
     };
   },
   computed: {
+    ...mapState("Session", ["BASE_URL"]),
     ...mapGetters("Lines", [
       "getBeer",
       "getStatus",
@@ -257,6 +258,7 @@ export default {
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
+    @import "@/assets/styles/components";
 .kegDetails {
   flex: 1;
   width: 100%;

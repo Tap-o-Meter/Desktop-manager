@@ -2,7 +2,8 @@ const state = {
   lines: [],
   kegs: [],
   beers: [],
-  connectedLines: []
+  connectedLines: [],
+  emergencyCard: ""
 };
 
 const mutations = {
@@ -43,6 +44,7 @@ const mutations = {
     state.lines = socketLines.lines;
     state.lines.sort((a, b) => a.noLinea - b.noLinea);
     state.beers = socketLines.beers;
+    state.emergencyCard = socketLines.emergencyCard.cardId;
   },
   REPLACE_LINE(state, newLine) {
     const index = state.lines.findIndex(line => line._id === newLine.data._id);
@@ -73,6 +75,10 @@ const mutations = {
   EDIT_BEER(state, newBeer) {
     const index = state.beers.findIndex(beer => beer._id === newBeer._id);
     if (index !== -1) state.beers.splice(index, 1, newBeer);
+  },
+  ADD_SALE(state, sale) {
+    const index = state.kegs.findIndex(keg => keg._id === sale.kegId);
+    if (index !== -1) state.kegs.splice(index, 1, sale);
   }
 };
 
@@ -109,6 +115,9 @@ const actions = {
   },
   editBeer({ commit }, beer) {
     commit("EDIT_BEER", beer);
+  },
+  newSale({ commit }, sale) {
+    commit("ADD_SALE", sale);
   }
 };
 

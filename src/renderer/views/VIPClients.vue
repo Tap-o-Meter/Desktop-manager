@@ -7,7 +7,7 @@
     </div>
     <div class="barrelsList d-flex flex-wrap justify-center"></div>
 
-    <v-card class="ma-5 elevation-0" style="min-height:80%">
+    <v-card class="ma-5 elevation-0" style="min-height:80% height:100%">
       <v-container fluid class="pa-1" style="position:stiky">
         <v-row class="ma-0">
           <v-col cols="2">
@@ -21,24 +21,15 @@
               prepend-inner-icon="mdi-magnify"
             />
           </v-col>
+
           <v-col cols="2" class="ml-auto">
             <v-select
               dense
               background-color="#f5f5f5"
-              placeholder="Ordenar: # Linea"
-              item-text="noLinea"
-              item-value="_id"
-              solo
-              flat
-            />
-          </v-col>
-          <v-col cols="2">
-            <v-select
-              dense
-              background-color="#f5f5f5"
-              placeholder="Categoría: Todas"
-              item-text="noLinea"
-              item-value="_id"
+              placeholder="Todas"
+              prefix="Categoría: "
+              :items="filters"
+              v-model="filtro"
               label="Filtrar"
               solo
               flat
@@ -48,13 +39,13 @@
       </v-container>
       <v-data-table
         :headers="headers"
-        :items="Clients"
+        :items="applyFilter(filtro)"
         class="elevation-0 d-flex flex-column pt-2"
         style="min-height:80vh;"
         :items-per-page="15"
         :search="search"
         item-key="_id"
-        v-model="selected"
+        @click:row="gottoWorker"
       >
         <template v-slot:item.name="{ item }">
           <span class="header-4-alt ml-3">
@@ -76,101 +67,27 @@
             <span v-text="getLevel(item.level)" />
           </v-chip>
         </template>
-        <template v-slot:item.actions="{ item }">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
-              <v-icon
-                size="20"
-                class="mr-2"
-                @click.stop="
-                  $router.push({ name: 'client-details', params: item })
-                "
-                v-on="on"
-                color="#00acc1"
-              >
-                mdi-magnify
-              </v-icon>
-            </template>
-            <span>Ver más</span>
-          </v-tooltip>
-        </template>
       </v-data-table>
     </v-card>
 
     <v-tooltip left>
       <template v-slot:activator="{ on }">
-        <v-fab-transition>
-          <v-btn
-            v-show="selected.length < 1"
-            dark
-            class="mx-2"
-            fab
-            v-on="on"
-            medium
-            @click.stop="dialog = true"
-            color="#00acc1"
-          >
-            <v-icon dark>mdi-plus</v-icon>
-          </v-btn>
-        </v-fab-transition>
+        <v-btn
+          dark
+          class="mx-2"
+          fab
+          v-on="on"
+          medium
+          @click.stop="dialog = true"
+          color="#00acc1"
+        >
+          <v-icon dark>mdi-plus</v-icon>
+        </v-btn>
       </template>
       <span>Nuevo cliente</span>
     </v-tooltip>
 
-    <v-tooltip left>
-      <template v-slot:activator="{ on }">
-        <v-fab-transition>
-          <v-btn
-            v-show="selected.length > 0"
-            dark
-            class="mx-2"
-            fab
-            medium
-            v-on="on"
-            @click.stop="addExtractQty(true)"
-            color="#83d640"
-          >
-            <v-icon dark>mdi-arrow-right-bold-outline</v-icon>
-          </v-btn>
-        </v-fab-transition>
-      </template>
-      <span>Extraer inventario</span>
-    </v-tooltip>
-
-    <v-tooltip left>
-      <template v-slot:activator="{ on }">
-        <v-fab-transition>
-          <v-btn
-            v-show="selected.length > 0"
-            dark
-            class="mx-2"
-            style="margin-bottom:70px"
-            fab
-            medium
-            v-on="on"
-            @click.stop="addExtractQty(false)"
-            color="red"
-          >
-            <v-icon dark>mdi-arrow-left-bold-outline</v-icon>
-          </v-btn>
-        </v-fab-transition>
-      </template>
-      <span>Agregar inventario</span>
-    </v-tooltip>
-
     <AddVIPClient :open="dialog" :handleClose="closeModal" />
-    <SubtractInventory
-      :open="subtract"
-      :isExtracting="isExtracting"
-      :handleClose="closeSubtract"
-      :items="selected"
-    />
-    <StockDetails
-      :open="detailsModal"
-      :handleClose="closeDetails"
-      :item="itemToModify"
-    />
-
     <v-overlay z-index="2000" :value="loader">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
@@ -194,30 +111,34 @@ export default {
       loader: false,
       dialog: false,
       subtract: false,
-      detailsModal: false,
       search: "",
-      isExtracting: false,
-      itemToDelete: -1,
-      itemToModify: null,
+      filtro: "",
+      filters: [
+        "Todos",
+        "El Chikilla",
+        "El Alcohólico",
+        "Mi Hobbie",
+        "Bebedor Social"
+      ],
       Clients: [],
-      selected: [],
       headers: [
         { text: "NOMBRE", align: "start", value: "name" },
         { text: "NIVEL", value: "level", align: "start" },
-        {
-          text: "CERVEZAS TOMADAS",
-          value: "beersDrinked",
-          align: "start"
-        },
-        { text: "OPCIONES", value: "actions", align: "end", sortable: false }
+        { text: "CERVEZAS TOMADAS", value: "beersDrinked", align: "center" },
+        { text: "CERVEZAS GRATIS", value: "benefits.beers", align: "center" }
       ]
     };
   },
   computed: { ...mapState("Stock", ["stock"]) },
   methods: {
-    addExtractQty(extract) {
-      this.isExtracting = extract;
-      this.subtract = true;
+    applyFilter(filtro) {
+      const levels = [""];
+      return this.Clients.filter(client => {
+        console.warn(config.cardLevels[client.level - 1] === filtro);
+        return filtro === "Todos" || filtro === ""
+          ? true
+          : config.cardLevels[client.level - 1] === filtro;
+      });
     },
     closeModal() {
       this.dialog = false;
@@ -228,45 +149,22 @@ export default {
     getColor(level) {
       return config.getColorLevel(level);
     },
-    closeSubtract() {
-      this.subtract = false;
-    },
-    closeDetails() {
-      this.detailsModal = false;
-    },
     parseHalfDate(date) {
       return config.parseHalfDate(date);
     },
-    openDetails(item) {
-      this.itemToModify = item;
-      this.detailsModal = true;
-    },
-    confirmDelet(item) {
-      this.itemToDelete = item._id;
-      console.log(this.itemToDelete);
-      this.confirm = true;
-    },
-    async deleteItem() {
-      this.loader = true;
-      let response = await Api().post("/deletStock", {
-        id: this.itemToDelete
-      });
-      this.loader = false;
-      if (response.data.confirmation) {
-        this.$store.dispatch("Stock/removeStock", this.itemToDelete);
-        this.confirm = false;
-        this.closeModal();
-      } else {
-        console.log(response.data);
-        console.log("valiste");
-      }
+    gottoWorker(value) {
+      this.$router.push({ name: "client-details", params: value });
     }
   },
   beforeMount: async function() {
     this.loader = true;
-    let response = await Api().get("/getClients");
-    if (response.data.confirmation) {
-      this.Clients = response.data.data;
+    try {
+      let response = await Api().get("/getClients");
+      if (response.data.confirmation) {
+        this.Clients = response.data.data;
+        this.loader = false;
+      }
+    } catch (e) {
       this.loader = false;
     }
   }
@@ -315,7 +213,7 @@ export default {
     }
   }
   .mx-2 {
-    position: absolute;
+    position: fixed;
     bottom: 20px;
     right: 20px;
   }

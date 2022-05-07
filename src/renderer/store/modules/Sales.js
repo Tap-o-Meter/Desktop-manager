@@ -7,6 +7,9 @@ const state = {
 const mutations = {
   SET_SALES(state, salesList) {
     return (state.sales = salesList);
+  },
+  ADD_SALE(state, sale) {
+    state.sales.push(sale);
   }
 };
 
@@ -16,8 +19,11 @@ const actions = {
     let response = await Api().get(
       "/sales/" + date.getMonth() + "/" + date.getMonth() + 1
     );
-
     commit("SET_SALES", response.data.data);
+  },
+  addSale({ commit }, sale) {
+    console.log("tamos aquí");
+    commit("ADD_SALE", sale);
   }
 };
 const getters = {
@@ -45,17 +51,36 @@ const getters = {
   getLineSales: state => idKeg => {
     return state.sales.filter(sale => sale.kegId === idKeg);
   },
+
   getSalesByWorker: state => workers => {
     var salesByWorker = [];
     workers.forEach((worker, i) => {
       var qtyByWorker = 0.0;
       state.sales.find(sale => {
-        if (sale.workerId == worker._id && sale.concept != "MERMA")
+        if (sale.workerId == worker._id && sale.concept != "MERMA") {
+          // if (i === 2) console.log(parseFloat(sale.qty));
           qtyByWorker += parseFloat(sale.qty);
+        }
       });
-      salesByWorker.push(qtyByWorker);
+
+      salesByWorker.push(
+        qtyByWorker - Math.floor(qtyByWorker) !== 0
+          ? qtyByWorker.toFixed(2)
+          : qtyByWorker
+      );
     });
     return salesByWorker;
+  },
+  getMermaFromWorker: state => worker => {
+    var mermaWorker = 0.0;
+    state.sales.find(sale => {
+      if (sale.workerId == worker._id && sale.concept == "MERMA") {
+        mermaWorker += parseFloat(sale.qty);
+      }
+    });
+    return mermaWorker - Math.floor(mermaWorker) !== 0
+      ? mermaWorker.toFixed(2)
+      : mermaWorker;
   },
   getDumpByLines: state => lines => {
     var dumpByLine = [];
@@ -93,6 +118,7 @@ const getters = {
         }
       });
       lineCount.push({
+        id: line._id,
         noLinea: line.noLinea,
         beer: line.beerId,
         count: { growlers, pints, tasters }

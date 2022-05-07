@@ -1,4 +1,4 @@
-import socket from "./socket-client";
+import socket, { connectToSocket } from "./socket-client";
 import {
   portList,
   connectPort,
@@ -20,5 +20,6 @@ export {
   unsuscribe,
   store,
   socket,
+  connectToSocket,
   setMainOptions
 };

@@ -11,14 +11,14 @@
           <v-col cols="3" class="d-flex mt-3 flex-column">
             <span class="s-light-subtitles bold ">Nombre:</span>
             <span class="header-3-alt thin">
-              {{ client.name + " " + client.lastName }}
+              {{ name + " " + lastName }}
               <v-btn
                 fab
                 dark
                 x-small
                 color="primary"
                 class="ml-1"
-                @click.stop="editWorkerShow = true"
+                @click.stop="editClient = true"
               >
                 <v-icon v-text="'mdi-pencil'" />
               </v-btn>
@@ -43,7 +43,7 @@
           <v-col cols="3" class="d-flex mt-3 flex-column">
             <span class="s-light-subtitles bold ">No. de tarjeta:</span>
             <span class="header-3-alt thin">
-              - <u>{{ client.cardId }}</u>
+              - <u>{{ cardId }}</u>
             </span>
           </v-col>
           <v-col cols="3" class="d-flex mt-3 flex-column">
@@ -159,33 +159,146 @@
               </v-row>
             </v-container>
           </v-tab-item>
+          <v-tab-item>
+            <v-container fluid style="height:100%">
+              <v-row style="height:100%">
+                <v-col cols="9" class="justify-center align-center">
+                  <v-list three-line>
+                    <template v-for="(benefit, index) in benefits">
+                      <v-list-item>
+                        <v-list-item-icon tile>
+                          <v-icon size="48" v-html="getIcon(benefit.name)" />
+                        </v-list-item-icon>
+
+                        <v-list-item-content class="pl-2">
+                          <v-list-item-title v-html="getTitle(benefit.name)" />
+                          <v-list-item-subtitle v-html="getSubtitle(benefit)" />
+                        </v-list-item-content>
+                        <v-btn
+                          v-if="benefit.name === 'beers'"
+                          outlined
+                          color="success"
+                          @click.stop="claimBenefit(benefit)"
+                        >
+                          Reclamar
+                        </v-btn>
+                      </v-list-item>
+                      <v-divider :key="index" inset />
+                    </template>
+                  </v-list>
+                </v-col>
+                <v-col cols="3" class="center-text pl-0">
+                  <p class="header-2-alt">Opciones</p>
+                  <v-btn
+                    outlined
+                    depressed
+                    style="width: 100%"
+                    color="primary"
+                    class="mt-3"
+                    @click.stop="dialog = true"
+                  >
+                    Editar
+                  </v-btn>
+                  <v-btn
+                    outlined
+                    depressed
+                    style="width: 100%"
+                    color="error"
+                    class="mt-3"
+                    @click.stop="confirm = true"
+                  >
+                    Eliminar
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-tab-item>
         </v-tabs-items>
       </v-card>
     </div>
+    <AddVIPClient
+      :Client="client"
+      :open="editClient"
+      :handleClose="closeModal"
+    />
     <v-overlay z-index="2000" :value="loader">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
+    <v-dialog
+      :value="lineList"
+      transition="dialog-bottom-transition"
+      max-width="400"
+      scrollable
+      persistent
+    >
+      <v-card class="pt-3 pl-3 pr-3 pb-1" style="height: 400px;">
+        <v-card-title>
+          <v-icon
+            v-text="'mdi-format-list-checks'"
+            color="green"
+            class="mr-2"
+          />Elige una línea:
+        </v-card-title>
+        <v-card-text class="d-flex flex-column ">
+          <v-btn
+            text
+            height="50"
+            class="justify-start pl-0"
+            v-for="(line, index) in lines"
+            :key="line.id"
+            v-if="line.idKeg.length > 0"
+            @click="redeemBeer(line._id)"
+            v-html="index + 1 + '.- ' + beerName(line.idKeg)"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red darken-1" text @click="lineList = false">
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
 import { mapGetters, mapState } from "vuex";
 import { BarChart } from "../components/charts";
-import { SetSchedule, AddWorker } from "../components/modals";
+import { SetSchedule, AddWorker, AddVIPClient } from "../components/modals";
 import Api from "../service/api";
 import config from "../config";
 export default {
   name: "ClientDetails",
-  components: { BarChart, SetSchedule, AddWorker },
+  components: { BarChart, SetSchedule, AddWorker, AddVIPClient },
   data() {
     return {
       tab: null,
-      dialog: false,
+      editClient: false,
       editWorkerShow: false,
+      lineList: false,
       sales: [],
+      name: "",
+      lastName: "",
+      cardId: "",
+      client: null,
       loader: false,
       confirm: false,
-      items: ["Historial", "Horario"],
+      items: ["Historial", "Beneficios"],
+
       history: [],
+      benefits: [],
+      icons: {
+        beers: "mdi-glass-mug-variant",
+        degustation: "mdi-chef-hat",
+        newBeers: "mdi-test-tube",
+        misc: "mdi-gift"
+      },
+      titles: {
+        beers: "¡Cervezas gratis!",
+        degustation: "Degustaciones y maridajes",
+        newBeers: "Probar nuestras nuevas cervezas",
+        misc: "Regalo Especial: "
+      },
       historyHeaders: [
         { text: "Cerveza", value: "beerName" },
         { text: "Concepto", value: "concept", align: "end" },
@@ -197,12 +310,26 @@ export default {
   },
   computed: {
     ...mapGetters("Lines", ["getKeg", "getBeer"]),
-    client() {
-      return this.$route.params;
+    ...mapState("Lines", ["lines"]),
+    ...mapGetters("Lines", ["getKeg", "getBeer", "getCriticalKegs"]),
+    getBenefits() {
+      const { benefits, specialBenefits } = this.client;
+      const filteredBenefits = [];
+      const keys = Object.keys(benefits);
+      keys.forEach((benefitKey, i) =>
+        filteredBenefits.push({ name: benefitKey, value: benefits[benefitKey] })
+      );
+      console.log(specialBenefits ? "fuck" : "yei");
+      return filteredBenefits;
     }
   },
   beforeMount: async function() {
     this.loader = true;
+    this.client = this.$route.params;
+    this.name = this.client.name;
+    this.lastName = this.client.lastName;
+    this.cardId = this.client.cardId;
+    this.benefits = this.getBenefits;
     let response = await Api().get(
       "/client-purchase/" + this.$route.params._id
     );
@@ -213,8 +340,31 @@ export default {
     }
   },
   methods: {
-    closeModal() {
-      this.dialog = false;
+    closeModal(callBack) {
+      if (callBack) {
+        this.client = callBack;
+        this.name = callBack.name;
+        this.lastName = callBack.lastName;
+        this.cardId = callBack.cardId;
+      }
+      this.editClient = false;
+    },
+    getIcon(action) {
+      const { icons } = this;
+      return icons[icons.hasOwnProperty(action) ? action : "misc"];
+    },
+    getTitle(action) {
+      const { titles } = this;
+      return titles[titles.hasOwnProperty(action) ? action : "misc" + action];
+    },
+    claimBenefit(benefit) {
+      this.lineList = true;
+    },
+    getSubtitle(action) {
+      if (action.name === "beers") {
+        return "<span>Cervezas restantes: <b>" + action.value + "</b></span>";
+      }
+      return null;
     },
     parseHalfDate(date) {
       return config.parseHalfDate(date);
@@ -248,6 +398,20 @@ export default {
     },
     parseDate(date) {
       return config.parseDate(date);
+    },
+    async redeemBeer(lineId) {
+      const { cardId } = this;
+      const url = "/claim-benefit";
+      const data = { lineId, benefit: "beers", cardId };
+      this.loader = true;
+      let response = await Api().post(url, data);
+      this.loader = false;
+      if (response.data.confirmation === "success") {
+        this.lineList = false;
+      } else {
+        console.log(response.data);
+        console.log("valiste");
+      }
     }
   }
 };

@@ -213,7 +213,7 @@ export default {
           newKeg: keg._id
         });
         this.loader = false;
-        if (response.data.confirmation) {
+        if (response.data.confirmation === "success") {
           this.$store.dispatch("Lines/replaceLine", {
             data: response.data.data,
             newStatus: status

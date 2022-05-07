@@ -16,8 +16,7 @@
                       cover
                       :src="
                         beer.image !== null
-                          ? 'http://beer-control.local:3000/getImage/' +
-                            beer.image
+                          ? BASE_URL + '/getImage/' + beer.image
                           : require('@/assets/no-beer.svg')
                       "
                       alt="image"
@@ -163,6 +162,7 @@
 import Api from "../../service/api";
 import axios from "axios";
 import config from "../../config";
+import { mapState } from "vuex";
 export default {
   name: "KegDetails",
   data() {
@@ -190,6 +190,7 @@ export default {
     beer: Object
   },
   computed: {
+    ...mapState("Session", ["BASE_URL"]),
     names() {
       return this.$store.getters["Stock/getNames"];
     },

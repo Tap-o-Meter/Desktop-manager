@@ -12,7 +12,7 @@
                 <v-img
                   :src="
                     item.image.length > 2
-                      ? 'http://beer-control.local:3000/getImage/' + item.image
+                      ? BASE_URL + '/getImage/' + item.image
                       : require('@/assets/no-image.svg')
                   "
                 />
@@ -58,7 +58,7 @@
   </v-dialog>
 </template>
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapState } from "vuex";
 import Api from "../../service/api";
 export default {
   data() {
@@ -67,6 +67,7 @@ export default {
     };
   },
   computed: {
+    ...mapState("Session", ["BASE_URL"]),
     isDisabled() {
       var disabled = false;
       this.qty.forEach((item, i) => {
@@ -85,17 +86,15 @@ export default {
     isNumber: function(evt, value, max) {
       evt = evt ? evt : window.event;
       var code = evt.which ? evt.which : evt.keyCode;
-      if (code > 31 && (code < 48 || code > 57) && code !== 46) {
+      if (code > 31 && (code < 48 || code > 57) && code !== 46)
         evt.preventDefault();
-      } else if (
+      else if (
         parseFloat(value + String.fromCharCode(code)) > max ||
         parseFloat(value + String.fromCharCode(code)) < 1
       ) {
         if (this.isExtracting) evt.preventDefault();
         else return true;
-      } else {
-        return true;
-      }
+      } else return true;
     },
     async subtractInventory() {
       const { qty, isExtracting } = this;
@@ -103,7 +102,7 @@ export default {
       const path = isExtracting ? "/subtract_inventory" : "/add_inventory";
       let response = await Api().post(path, { items: qty });
       this.loader = false;
-      if (response.data.confirmation) {
+      if (response.data.confirmation === "success") {
         const action = this.worker ? "Stock/takeStock" : "Stock/refillStock";
         this.$store.dispatch(action, qty);
         this.handleClose(false);

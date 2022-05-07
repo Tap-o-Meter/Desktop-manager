@@ -1,5 +1,5 @@
 <template>
-  <div class=" WorkerDetails wrapper d-flex flex-column align-center">
+  <div class=" WorkerDetails wrapper d-flex flex-column align-center no-scroll">
     <div
       class="titleWrapper d-flex pl-5 pr-5 align-center justify-space-between"
     >
@@ -11,7 +11,7 @@
           <v-col cols="2" class="d-flex justify-end flex-column align-center">
             <v-avatar color="orange" size="130">
               <v-img
-                :src="'http://beer-control.local:3000/getImage/' + worker.foto"
+                :src="BASE_URL + '/getImage/' + worker.foto"
                 v-if="worker.foto"
               />
               <span class="white--text header-fg-alt" v-else>
@@ -62,59 +62,193 @@
 
         <v-tabs-items v-model="tab" style="height:90%">
           <v-tab-item>
-            <div class="d-flex flex-column">
-              <h1 class="ml-5 header-1-alt mt-5 light">
-                Ventas <span class="header-6-alt light">(semanal)</span>
-              </h1>
-              <h1 class="ml-9 header-fg-alt">
-                <span class="header-1">$</span> 11,200.
-                <span class="header-1">70</span>
-              </h1>
-              <v-container fluid>
-                <v-row>
-                  <v-col :cols="7" class="pr-5">
+            <div class="d-flex flex-column" style="height:100%">
+              <v-container fluid class="d-flex flex-column" style="height:100%">
+                <v-row class="py-0" style="flex-grow:0">
+                  <v-col cols="3">
+                    <h1 class="ml-5 header-1-alt  green--text">
+                      Ventas <span class="header-6-alt light">(Mensual)</span>
+                    </h1>
+                    <h1 class="ml-9 header-fg-alt">
+                      {{ this.worker.qty }}
+                      <span class="header-1">lts.</span>
+                    </h1>
+                  </v-col>
+                  <v-col cols="3">
+                    <h1 class="ml-5 header-1-alt  red--text">
+                      Merma <span class="header-6-alt light">(Mensual)</span>
+                    </h1>
+                    <h1 class="ml-9 header-fg-alt">
+                      {{ this.getMerma }}
+                      <span class="header-1">lts.</span>
+                    </h1>
+                  </v-col>
+                </v-row>
+                <v-row class="pl-7 pt-8" style="height:50px; flex-grow:0">
+                  <span class="header-2-alt light">Detalles</span>
+                </v-row>
+                <v-row class="mt-3 mb-5">
+                  <v-col :cols="7">
+                    <HorizontalBarChart
+                      v-if="salesCounter.length > 0"
+                      :data="salesCounter"
+                      :labels="barLabels"
+                      :onClickCallback="upDateConceptDetails"
+                      :height="320"
+                    />
+                    <v-card
+                      outlined
+                      v-else
+                      style="height:338px; width:100%;"
+                      class="d-flex justify-center align-center px-10"
+                    >
+                      <span class="header-3-alt">
+                        <v-icon v-text="'mdi-format-list-bulleted'" /> No hay
+                        información que mostrar
+                      </span>
+                    </v-card>
+                  </v-col>
+                  <v-col :cols="5" class="pr-5">
                     <v-card :outlined="true" class="pt-5">
-                      <v-data-table
+                      <div class="detail ma-1 pa-1">
+                        <span class="header-3-alt mb-5 ml-3">
+                          Desglose
+                        </span>
+                        <p class="header-4-alt ml-3 mb-0">
+                          -{{ this.barLabels[this.desgloseIndex] }}
+                        </p>
+                        <v-container class="m-2 pt-0" fluid>
+                          <v-row class="mt-1">
+                            <v-col cols="7" offset="5" class="text-right pt-0">
+                              <h3 class="header-3-alt thin">Merma</h3>
+                              <p class="header-fg-alt ultra-thin red--text">
+                                3
+                              </p>
+                            </v-col>
+                            <v-col
+                              cols="5"
+                              class="d-flex align-center justify-center pr-2 pt-0 pl-0 pb-0"
+                            >
+                            </v-col>
+                            <v-col cols="7" class="left-line pa-1">
+                              <v-row>
+                                <v-col
+                                  cols="6"
+                                  class="d-flex flex-column align-center pa-1"
+                                >
+                                  <span class="header-1-alt ultra-thin">
+                                    3
+                                  </span>
+                                  <span class="header-6-alt light bold">
+                                    V. vendidos
+                                  </span>
+                                </v-col>
+                                <v-col
+                                  cols="6"
+                                  class="d-flex flex-column align-center pa-1"
+                                >
+                                  <span class="header-1-alt ultra-thin">
+                                    3
+                                  </span>
+                                  <span class="header-6-alt light bold">
+                                    L. vendidos
+                                  </span>
+                                </v-col>
+                              </v-row>
+                              <v-row>
+                                <v-col
+                                  cols="6"
+                                  class="d-flex flex-column align-center pa-1"
+                                >
+                                  <span class="header-1-alt ultra-thin">
+                                    3
+                                  </span>
+                                  <span class="header-6-alt light bold">
+                                    Tasters
+                                  </span>
+                                </v-col>
+                                <v-col
+                                  cols="6"
+                                  class="d-flex flex-column align-center pa-1"
+                                >
+                                  <span class="header-1-alt ultra-thin">
+                                    3
+                                  </span>
+                                  <span class="header-6-alt light bold">
+                                    Merma
+                                  </span>
+                                </v-col>
+                              </v-row>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </div>
+                      <!-- <v-data-table
                         :headers="headers"
                         :items="desserts"
                         :items-per-page="5"
                         class="elevation-0"
-                      />
+                      /> -->
                     </v-card>
-                  </v-col>
-                  <v-col :cols="5">
-                    <BarChart :height="320" class="mt-5 mb-5" />
                   </v-col>
                 </v-row>
               </v-container>
             </div>
           </v-tab-item>
           <v-tab-item>
-            <v-data-table
-              :headers="historyHeaders"
-              :items="sales"
-              :items-per-page="12"
-              class="elevation-0 d-flex flex-column"
-              style="height:100%"
-            >
-              <template v-slot:item.date="{ item }">
-                <span v-text="parseDate(item.date)" />
-              </template>
-              <template v-slot:item.qty="{ item }">
-                <span v-text="parseQty(item.qty)" />
-              </template>
-              <template v-slot:no-data>
-                <p
-                  class="header-3-alt thin black--text secundary"
-                  style="margin-top:120px"
+            <div class="d-flex flex-column pt-3 mx-4" style="height:100%">
+              <div class="px-4 d-flex mb-7">
+                <div class="">
+                  <h1>{{ this.selectedMonth }}</h1>
+                  <h4>{{ this.history.length }} ventas</h4>
+                </div>
+                <v-spacer />
+                <div
+                  class="d-flex justify-center align-center"
+                  style="width:220px"
                 >
-                  <v-icon size="35" class="pb-1">
-                    mdi-calendar-remove-outline
-                  </v-icon>
-                  No hay Historial disponible
-                </p>
-              </template>
-            </v-data-table>
+                  <v-select
+                    :placeholder="currentMonth"
+                    :items="months"
+                    item-text="name"
+                    item-value="value"
+                    flat
+                    solo
+                    v-on:change="changeRoute"
+                    v-model="period"
+                    hide-details
+                    background-color="#f5f5f5"
+                    prefix="Perido: "
+                  ></v-select>
+                </div>
+              </div>
+              <v-divider></v-divider>
+              <v-data-table
+                :headers="historyHeaders"
+                :items="history"
+                :items-per-page="9"
+                class="elevation-0 d-flex flex-column mt-1"
+                style="height:100%"
+              >
+                <template v-slot:item.date="{ item }">
+                  <span v-text="parseDate(item.date)" />
+                </template>
+                <template v-slot:item.qty="{ item }">
+                  <span v-text="parseQty(item.qty)" />
+                </template>
+                <template v-slot:no-data>
+                  <p
+                    class="header-3-alt thin black--text secundary"
+                    style="margin-top:120px"
+                  >
+                    <v-icon size="35" class="pb-1">
+                      mdi-calendar-remove-outline
+                    </v-icon>
+                    No hay Ventas para mostrar
+                  </p>
+                </template>
+              </v-data-table>
+            </div>
           </v-tab-item>
           <v-tab-item>
             <v-container fluid style="height:100%">
@@ -204,13 +338,13 @@
 </template>
 <script>
 import { mapGetters, mapState } from "vuex";
-import { BarChart } from "../components/charts";
+import { HorizontalBarChart } from "../components/charts";
 import { SetSchedule, AddWorker } from "../components/modals";
 import Api from "../service/api";
 import config from "../config";
 export default {
   name: "WorkerDetails",
-  components: { BarChart, SetSchedule, AddWorker },
+  components: { HorizontalBarChart, SetSchedule, AddWorker },
   data() {
     return {
       tab: null,
@@ -218,7 +352,9 @@ export default {
       editWorkerShow: false,
       sales: [],
       confirm: false,
-      items: ["Ventas", "Historial", "Horario"],
+      desgloseIndex: 0,
+      items: ["Resumen", "Historial", "Horario"],
+      barLabels: ["Vasos", "Tasters", "Growlers"],
       headers: [
         { text: "Dessert (100g serving)", sortable: false, value: "name" },
         { text: "Calories", value: "calories" },
@@ -317,14 +453,60 @@ export default {
       ],
       weekday: [0, 1, 2, 3, 4, 5, 6],
       value: "",
-      events: []
+      events: [],
+      salesCounter: [],
+      period: 0,
+      history: []
     };
   },
   computed: {
     ...mapGetters("Session", ["getWorker"]),
+    ...mapState("Session", ["BASE_URL"]),
     ...mapGetters("Lines", ["getKeg", "getBeer"]),
+    ...mapGetters("Sales", ["getMermaFromWorker"]),
     worker() {
-      return this.getWorker(this.$route.params.id);
+      return this.$route.params.worker;
+    },
+    currentMonth() {
+      return config.currentMonth().name;
+    },
+    selectedMonth() {
+      return config.months[this.period].name;
+    },
+    months() {
+      return config.months.filter(
+        month => month.value <= config.currentMonth().value
+      );
+    },
+    getMerma() {
+      return this.getMermaFromWorker(this.worker);
+    },
+    sectionedSales() {
+      var sections = { vasos: [], tasters: [], growlers: [] };
+      this.sales.forEach((sale, i) => {
+        switch (sale.concept) {
+          case "PINT":
+            sections.vasos.push(sale);
+            break;
+          case "TASTER":
+            sections.tasters.push(sale);
+            break;
+          case "GROWLER":
+            sections.growlers.push(sale);
+            break;
+        }
+      });
+      if (
+        sections.vasos.length > 0 ||
+        sections.tasters.length > 0 ||
+        sections.growlers.length > 0
+      ) {
+        this.salesCounter = [
+          sections.vasos.length,
+          sections.tasters.length,
+          sections.growlers.length
+        ];
+      }
     },
     generateDate() {
       var days = [];
@@ -355,8 +537,24 @@ export default {
     getEventColor(event) {
       return event.color;
     },
+    upDateConceptDetails(a) {
+      console.log(a);
+      this.desgloseIndex = a;
+    },
     closeModal() {
       this.dialog = false;
+    },
+    async changeRoute() {
+      console.log("esta shit está aquí");
+      let response = await Api().post("/worker_sales", {
+        id: this.worker._id,
+        period: this.period
+      });
+      if (response.data.confirmation === "success") {
+        this.history = response.data.data;
+      } else {
+        console.log(response);
+      }
     },
     editWorkerClose() {
       this.editWorkerShow = false;
@@ -384,17 +582,26 @@ export default {
     }
   },
   mounted: async function() {
-    let response = await Api().post("/worker_sales", {
-      id: this.worker._id
-    });
+    this.period = config.currentMonth().value;
+    let response = await Api().post("/worker_sales", { id: this.worker._id });
+    console.log("las ventas 😫");
+    console.log(response.data.data);
     this.sales = response.data.data;
-    console.log(response.data);
+    this.history = this.sales;
+  },
+  watch: {
+    sales: function(newVal, oldVal) {
+      if (newVal !== null) {
+        this.sectionedSales;
+      }
+    }
   }
 };
 </script>
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
+@import "@/assets/styles/components";
 .wrapper {
   flex: 1;
   width: 100%;
@@ -406,6 +613,10 @@ export default {
   .dialog {
     position: absolute;
     z-index: 4000;
+  }
+  .v-text-field {
+    border-radius: 9px;
+    font-size: 14px;
   }
   .titleWrapper {
     z-index: 1;

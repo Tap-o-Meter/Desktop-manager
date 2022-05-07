@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app no-scroll">
     <v-app id="app-content">
       <SideNavigator />
 
@@ -31,8 +31,9 @@
 
 <script>
 import { SideNavigator } from "./components/navigator";
-import { setStore, setMainOptions } from "./api";
+import { setStore, setMainOptions, connectToSocket, socket } from "./api";
 import { mapGetters, mapState } from "vuex";
+import config from "./config";
 import { MultipleOptions, ConnectLine } from "./components/modals";
 export default {
   name: "retry3",
@@ -79,17 +80,21 @@ export default {
       });
     }
   },
-  mounted() {
+  async mounted() {
     setStore(this.$store);
     setMainOptions((msg, show) => {
       this.showQuickActions(msg);
       this.showOptions(show);
     });
+    let url = await config.BASE_URL();
+    this.$store.dispatch("Session/setURL", url);
+    connectToSocket();
   }
 };
 </script>
 
-<style>
+<style lang="scss">
+@import "@/assets/styles/components";
 @font-face {
   font-family: "Lato-reg";
   src: url("./assets/fonts/Lato/Lato-Regular.ttf");

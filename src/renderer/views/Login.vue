@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper custom-scroll">
     <div class="background" />
     <v-card
       color="#f5f5f5"
@@ -70,6 +70,7 @@ export default {
 </script>
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
+@import "@/assets/styles/components";
 .wrapper {
   display: flex;
   justify-content: center;

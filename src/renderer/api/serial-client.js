@@ -23,8 +23,14 @@ export function connectPort(port, store) {
   lockerSerialPort = null;
   lockerSerialPort = new SP(portToConnect, {
     baudRate: 115200,
-    autoOpen: false
+    autoOpen: false,
+    flowControl: false,
+    parity: "none",
+    stopBits: 1
   });
+
+  lockerSerialPort.write("^");
+
   parser = lockerSerialPort.pipe(new Readline({ delimiter: "\n" }));
   lockerSerialPort.open(function(err) {
     if (err) {

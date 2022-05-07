@@ -13,13 +13,7 @@
           <v-container fluid class="pa-0">
             <v-scroll-x-transition :hide-on-leave="true">
               <v-row v-show="setCard" class="row-container">
-                <lottie-animation
-                  :class="animationClass"
-                  :path="animation"
-                  :loop="loop"
-                  :autoPlay="true"
-                  :speed="1"
-                />
+                <div id="animation" :class="animationClass"></div>
                 <span class="header-3-alt thin msg" v-text="message" />
               </v-row>
             </v-scroll-x-transition>
@@ -32,16 +26,21 @@
                     >
                       <v-icon size="100" v-text="'mdi-account-outline'" />
                       <span class="header-4-alt">No. de Tarjeta</span>
-                      <button
-                        plain
-                        class="xs-subtitles-bold"
-                        @click.stop="reset()"
-                      >
-                        <span>
+                      <div class="d-flex justify-center align-center">
+                        <span class="xs-subtitles-bold">
                           <u>{{ this.cardId }}</u>
                         </span>
-                        <v-icon class="ml-2" size="16" v-text="'mdi-repeat'" />
-                      </button>
+                        <v-btn
+                          height="24"
+                          width="24"
+                          color="primary"
+                          fab
+                          class="ml-2"
+                          @click.stop="reset()"
+                        >
+                          <v-icon size="15" v-text="'mdi-cached'" />
+                        </v-btn>
+                      </div>
                     </v-row>
                   </v-col>
                   <v-col cols="4">
@@ -101,6 +100,27 @@
     <v-overlay z-index="2000" :value="loader">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
+    <v-dialog
+      :value="error"
+      transition="dialog-bottom-transition"
+      max-width="600"
+    >
+      <v-card class="pt-3 pl-3 pr-3 pb-1">
+        <v-card-title>
+          <v-icon v-text="'mdi-alert'" color="red" class="mr-2" />Error
+        </v-card-title>
+        <v-card-text class="d-flex flex-row align-center">
+          La tarjeta que ha asignado ya está ocupada, por favor registre una
+          nueva y vuelva a intentar.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="red darken-1" text @click="error = false">
+            Ok
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
@@ -108,10 +128,11 @@ import Api from "../../service/api";
 import { mapState } from "vuex";
 import { suscribe, unsuscribe } from "../../api/index.js";
 import ConnectDevice from "./connectDevice";
-import LottieAnimation from "lottie-vuejs/src/LottieAnimation.vue"; // import lottie-vuejs
+import config from "../../config";
+import lottie from "lottie-web";
 export default {
   name: "AddWorker",
-  components: { ConnectDevice, LottieAnimation },
+  components: { ConnectDevice },
   data() {
     return {
       dialog: false,
@@ -122,14 +143,15 @@ export default {
       lastNameRules: [v => !!v || "Los apellidos es requeridos"],
       setCard: true,
       loader: false,
-      animation: "",
+      error: false,
       animationClass: "",
       loop: true,
       message: "",
+      animation: null,
       animationClasses: ["animation-nfc", "animation-connect", "green-check"],
-      animationList: ["nfc", "connect-device", "green-check"],
+      animationList: ["nfc", "connect", "check"],
       messageList: [
-        "Coloque la nueva tarjeta de Emergencia",
+        "Coloque la tarjeta en el lector",
         "Favor de conectar el lector",
         "Número de tarjeta capturado"
       ]
@@ -138,25 +160,27 @@ export default {
   computed: { ...mapState("CardReader", ["connected"]) },
   props: {
     open: Boolean,
-    handleClose: Function
+    handleClose: Function,
+    Client: Object
   },
 
   beforeMount: function() {
     const option = this.connected ? 0 : 1;
     this.animationClass = this.animationClasses[option];
-    this.animation = this.getAnimation(option);
+    this.getAnimation(option);
     this.message = this.messageList[option];
   },
   watch: {
     open: function(newVal, oldVal) {
       console.log("Prop changed: ", newVal, " | was: ", oldVal);
       if (newVal) {
+        setTimeout(() => this.getAnimation(this.connected ? 0 : 1), 200);
         suscribe(id => {
           this.cardId = id;
-          this.animation = this.getAnimation(2);
+          this.loop = false;
+          this.getAnimation(2);
           this.animationClass = this.animationClasses[2];
           this.message = this.messageList[2];
-          this.loop = false;
           setTimeout(() => (this.setCard = false), 1200);
         });
       } else unsuscribe();
@@ -165,7 +189,7 @@ export default {
       const option = newVal ? 0 : 1;
       this.animationClass = this.animationClasses[option];
       this.message = this.messageList[option];
-      this.animation = this.getAnimation(option);
+      this.getAnimation(option);
       if (newVal) this.closeModal();
     }
   },
@@ -176,41 +200,54 @@ export default {
     reset() {
       const option = this.connected ? 0 : 1;
       this.setCard = true;
+      this.loop = true;
       this.animationClass = this.animationClasses[option];
-      this.animation = this.getAnimation(option);
+      this.getAnimation(option);
       this.message = this.messageList[option];
       this.cardId = "";
-      this.loop = true;
     },
     getAnimation(index) {
-      return "../../../../static/".concat(this.animationList[index], ".json");
+      if (this.animation) this.animation.destroy();
+      this.animation = lottie.loadAnimation({
+        container: document.getElementById("animation"),
+        renderer: "svg",
+        loop: this.loop,
+        autoplay: true,
+        rendererSettings: {
+          scaleMode: "centerCrop",
+          clearCanvas: true,
+          progressiveLoad: false,
+          hideOnTransparent: true
+        },
+        animationData: config.animations[this.animationList[index]]
+      });
     },
-    closeScreen() {
-      this.handleClose();
+    closeScreen(data) {
+      this.handleClose(data);
       this.$refs.form.resetValidation();
-      this.names = "";
+      this.name = "";
       this.lastName = "";
+      this.loop = true;
       const option = this.connected ? 0 : 1;
       this.animationClass = this.animationClasses[option];
-      this.animation = this.getAnimation(option);
+      this.getAnimation(option);
       this.message = this.messageList[option];
       this.cardId = "";
       this.setCard = true;
-      this.loop = true;
     },
     async createUser() {
       if (this.$refs.form.validate()) {
+        const { name, lastName, cardId } = this;
+        const url = this.Client ? "/editClient" : "/addClient";
+        const data = { name, lastName, cardId, level: 1 };
+        this.Client ? (data.id = this.Client._id) : null;
         this.loader = true;
-        let response = await Api().post("/addClient", {
-          name: this.name,
-          lastName: this.lastName,
-          cardId: this.cardId,
-          level: 1
-        });
+        let response = await Api().post(url, data);
         this.loader = false;
-        if (response.data.confirmation) {
-          this.closeScreen();
+        if (response.data.confirmation === "success") {
+          this.closeScreen(response.data.data);
         } else {
+          this.error = true;
           console.log(response.data);
           console.log("valiste");
         }

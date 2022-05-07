@@ -198,7 +198,7 @@ export default {
           horario: JSON.stringify(schedules)
         });
         this.loader = false;
-        if (response.data.confirmation) {
+        if (response.data.confirmation === "success") {
           this.$store.dispatch("Session/updateWorker", response.data.data);
           this.closeModal();
         } else {
