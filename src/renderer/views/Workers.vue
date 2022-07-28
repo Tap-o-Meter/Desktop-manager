@@ -85,9 +85,13 @@
       :open="dialog"
       :handleClose="closeModal"
     />
+    <v-overlay z-index="2000" :value="loader">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 <script>
+import Api from "../service/api";
 import { mapState, mapGetters } from "vuex";
 import { WorkerCell } from "../components/cells";
 import { AddWorker } from "../components/modals";
@@ -96,8 +100,10 @@ export default {
   components: { WorkerCell, AddWorker },
   data() {
     return {
+      loader: false,
       search: "",
       dialog: false,
+      workers: [],
       formatedWorkers: [],
       filteredWorkers: [],
       filtro: "",
@@ -107,7 +113,7 @@ export default {
     };
   },
   computed: {
-    ...mapState("Session", ["workers"]),
+    // ...mapState("Session", ["workers"]),
     ...mapState("Sales", ["sales"]),
     ...mapGetters("Sales", ["getSalesByWorker"]),
     formatWorkers() {
@@ -131,10 +137,22 @@ export default {
   },
 
   methods: {
-    closeModal() {
+    closeModal(should_reset) {
       this.dialog = false;
+      if (should_reset) this.loadWorkers();
     },
-
+    async loadWorkers() {
+      this.loader = true;
+      try {
+        let response = await Api().get("/getWorkers");
+        if (response.data.confirmation) {
+          this.workers = response.data.data;
+          this.loader = false;
+        }
+      } catch (e) {
+        this.loader = false;
+      }
+    },
     onChange(search, orden, filtro) {
       const filteredByName = this.formatWorkers.filter(worker =>
         (worker.nombre + " " + worker.apellidos)
@@ -175,6 +193,9 @@ export default {
       });
       return applyedFilter;
     }
+  },
+  beforeMount: async function() {
+    this.loadWorkers();
   }
 };
 </script>

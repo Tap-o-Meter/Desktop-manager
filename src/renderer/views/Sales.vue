@@ -251,11 +251,25 @@ export default {
       return sales.growlers + sales.pints;
     },
     gottoWorker(value) {
-      this.$router.push({ name: "worker-details", params: { id: value._id } });
+      this.$router.push({ name: "worker-details", params: { worker: value } });
     },
     gottoLine(value) {
       console.warn(value);
       this.$router.push({ name: "line-details", params: { id: value.id } });
+    },
+    async changeRoute() {
+      // console.log("esta shit está aquí");
+
+      // let response = await Api().get(
+      //   "/sales/" + this.from + "/" + this.to
+      // );
+      //
+      let response = await Api().get("/sales/" + this.period);
+      if (response.data.confirmation === "success") {
+        this.history = response.data.data;
+      } else {
+        console.log(response);
+      }
     }
   },
   mounted: async function() {

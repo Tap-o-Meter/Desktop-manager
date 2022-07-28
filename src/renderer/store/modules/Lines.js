@@ -20,12 +20,14 @@ const mutations = {
       ? state.connectedLines.push(socketLine)
       : (state.connectedLines[index] = socketLine);
   },
+
   ON_DISCONNECT_LINE(state, socketLine) {
     const index = state.connectedLines.findIndex(
       item => item.socket === socketLine.socket
     );
     index === -1 ? null : state.connectedLines.splice(index, 1);
   },
+
   DISABLE_LINE(state, lineToChage) {
     state.kegs.find(keg => {
       if (keg._id === lineToChage.idKeg) keg.status = "DISCONNECTED";
@@ -37,15 +39,23 @@ const mutations = {
       }
     });
   },
+
   SET_ALL_LINES(state, socketLines) {
     //console.log(socketLines);
-    state.connectedLines = socketLines.connectedLines;
+    // state.connectedLines = socketLines.connectedLines;
     state.kegs = socketLines.data;
     state.lines = socketLines.lines;
     state.lines.sort((a, b) => a.noLinea - b.noLinea);
     state.beers = socketLines.beers;
     state.emergencyCard = socketLines.emergencyCard.cardId;
   },
+
+  SET_CONNECTED_LINES(state, connectedLines) {
+    // console.log("está en connected lines");
+    console.warn(connectedLines);
+    state.connectedLines = connectedLines;
+  },
+
   REPLACE_LINE(state, newLine) {
     const index = state.lines.findIndex(line => line._id === newLine.data._id);
     const oldKeg = state.lines[index].idKeg;
@@ -63,19 +73,29 @@ const mutations = {
       }
     });
   },
+
   ADD_KEG(state, newKeg) {
     const noKegs = newKeg.cant;
     for (var i = 0; i < noKegs; i++) {
       state.kegs.push(newKeg);
     }
   },
+
+  REMOVE_KEG(state, kegId) {
+    console.warn(kegId);
+    const index = state.kegs.findIndex(item => item._id == kegId);
+    if (index !== -1) state.kegs.splice(index, 1);
+  },
+
   ADD_BEER(state, newBeer) {
     state.beers.push(newBeer);
   },
+
   EDIT_BEER(state, newBeer) {
     const index = state.beers.findIndex(beer => beer._id === newBeer._id);
     if (index !== -1) state.beers.splice(index, 1, newBeer);
   },
+
   ADD_SALE(state, sale) {
     const index = state.kegs.findIndex(keg => keg._id === sale.kegId);
     if (index !== -1) state.kegs.splice(index, 1, sale);
@@ -97,6 +117,9 @@ const actions = {
   connectedLine({ commit }, socketLine) {
     commit("ON_CONNECT_LINE", socketLine);
   },
+  setConnectedLines({ commit }, connectedLines) {
+    commit("SET_CONNECTED_LINES", connectedLines);
+  },
   disconnectedLine({ commit }, socketLine) {
     commit("ON_DISCONNECT_LINE", socketLine);
   },
@@ -109,6 +132,9 @@ const actions = {
   },
   addKeg({ commit }, keg) {
     commit("ADD_KEG", keg);
+  },
+  deleteKeg({ commit }, kegId) {
+    commit("REMOVE_KEG", kegId);
   },
   addBeer({ commit }, beer) {
     commit("ADD_BEER", beer);

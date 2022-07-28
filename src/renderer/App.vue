@@ -24,6 +24,13 @@
         >
           <b>Revise conexión</b>. No está conectado al servidor
         </v-alert>
+        <GettingHost
+          v-if="getting_host"
+          :open="getting_host"
+          :handleClose="closeGettingHost"
+          :error="errorLookingServer"
+          :onRetry="lookForServer"
+        />
       </div>
     </v-app>
   </div>
@@ -34,15 +41,17 @@ import { SideNavigator } from "./components/navigator";
 import { setStore, setMainOptions, connectToSocket, socket } from "./api";
 import { mapGetters, mapState } from "vuex";
 import config from "./config";
-import { MultipleOptions, ConnectLine } from "./components/modals";
+import { MultipleOptions, ConnectLine, GettingHost } from "./components/modals";
 export default {
   name: "retry3",
-  components: { SideNavigator, MultipleOptions, ConnectLine },
+  components: { SideNavigator, MultipleOptions, ConnectLine, GettingHost },
   data() {
     return {
       visible: false,
       cardId: null,
       lineDialog: false,
+      errorLookingServer: false,
+      getting_host: true,
       options: [
         {
           icon: "$searchUser",
@@ -70,6 +79,29 @@ export default {
     showOptions(value) {
       this.visible = value;
     },
+    closeGettingHost() {
+      this.getting_host = false;
+      this.errorLookingServer = false;
+    },
+    async lookForServer() {
+      this.errorLookingServer = false;
+      try {
+        let url = await config.BASE_URL();
+        this.getting_host = true;
+        if (url) {
+          this.getting_host = false;
+          setStore(this.$store);
+          setMainOptions((msg, show) => {
+            this.showQuickActions(msg);
+            this.showOptions(show);
+          });
+          this.$store.dispatch("Session/setURL", url);
+          connectToSocket();
+        }
+      } catch (e) {
+        this.errorLookingServer = true;
+      }
+    },
     showConnectLine(value) {
       this.lineDialog = value;
     },
@@ -81,14 +113,7 @@ export default {
     }
   },
   async mounted() {
-    setStore(this.$store);
-    setMainOptions((msg, show) => {
-      this.showQuickActions(msg);
-      this.showOptions(show);
-    });
-    let url = await config.BASE_URL();
-    this.$store.dispatch("Session/setURL", url);
-    connectToSocket();
+    this.lookForServer();
   }
 };
 </script>

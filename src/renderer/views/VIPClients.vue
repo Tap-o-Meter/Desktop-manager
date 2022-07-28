@@ -140,8 +140,9 @@ export default {
           : config.cardLevels[client.level - 1] === filtro;
       });
     },
-    closeModal() {
+    closeModal(should_reset) {
       this.dialog = false;
+      if (should_reset) this.loadClients();
     },
     getLevel(level) {
       return config.cardLevels[level - 1];
@@ -154,19 +155,22 @@ export default {
     },
     gottoWorker(value) {
       this.$router.push({ name: "client-details", params: value });
+    },
+    async loadClients() {
+      this.loader = true;
+      try {
+        let response = await Api().get("/getClients");
+        if (response.data.confirmation) {
+          this.Clients = response.data.data;
+          this.loader = false;
+        }
+      } catch (e) {
+        this.loader = false;
+      }
     }
   },
   beforeMount: async function() {
-    this.loader = true;
-    try {
-      let response = await Api().get("/getClients");
-      if (response.data.confirmation) {
-        this.Clients = response.data.data;
-        this.loader = false;
-      }
-    } catch (e) {
-      this.loader = false;
-    }
+    this.loadClients();
   }
 };
 </script>

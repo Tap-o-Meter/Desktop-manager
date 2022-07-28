@@ -59,9 +59,9 @@
                   <v-row v-show="!editInfo">
                     <v-col v-if="!editInfo" class="d-flex flex-column" cols="2">
                       <span class="bold-names light ">Cervecería</span>
-                      <span class="header-4-alt mate">{{
-                        placeInfo.name
-                      }}</span>
+                      <span class="header-4-alt mate">
+                        {{ placeInfo.name }}
+                      </span>
                     </v-col>
 
                     <v-col v-if="!editInfo" class="d-flex flex-column" cols="2">
@@ -302,7 +302,7 @@
                   <div class="d-flex flex-column align-center">
                     <qrcode-vue
                       id="myCanvas"
-                      :value="ip.toLowerCase() + '#/menu'"
+                      :value="ip.toLowerCase() + '/#/menu'"
                       :size="180"
                       level="H"
                     />
@@ -525,7 +525,12 @@ export default {
             );
             const sales = this.fixDate(response.data.data, ["date"]);
             const keys = Object.keys(sales);
-            const csv = parse(sales, { keys });
+            var csv;
+            try {
+              csv = parse(sales, { keys });
+            } catch (e) {
+              console.log("ni pedo no hay ventas");
+            }
             this.writeData(csv, entity.name);
           } else if ((entity.name = "kegs")) {
             let response = await Api().get("/getKegs/");
@@ -607,6 +612,7 @@ export default {
     try {
       const address = await config.BASE_URL();
       this.ip = "HTTP://" + address + ":5000";
+      console.warn(this.ip.toLowerCase() + "/#/menu");
     } catch (err) {
       this.ip = "DESCONECTADO";
     }

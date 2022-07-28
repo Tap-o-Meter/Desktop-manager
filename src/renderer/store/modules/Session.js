@@ -31,6 +31,10 @@ const mutations = {
   NEW_WORKER(state, newWorker) {
     return state.workers.push(newWorker);
   },
+  REMOVE_WORKER(state, workerId) {
+    const index = state.workers.findIndex(item => item._id === workerId);
+    index === -1 ? null : state.workers.splice(index, 1);
+  },
   SET_PLACE_INFO(state, placeInfo) {
     state.placeInfo = placeInfo;
   },
@@ -55,11 +59,17 @@ const actions = {
     let response = await Api().get("/getWorkers");
     commit("SET_WORKERS", response.data.data);
   },
+  setWorkers({ commit }, workers) {
+    commit("SET_WORKERS", workers);
+  },
   updateWorker({ commit }, workerUpdated) {
     commit("UPDATE_WORKER", workerUpdated);
   },
   newWorker({ commit }, newWorker) {
     commit("NEW_WORKER", newWorker);
+  },
+  removeWorker({ commit }, workerId) {
+    commit("REMOVE_WORKER", stockId);
   },
   setPlaceInfo({ commit }, placeInfo) {
     commit("SET_PLACE_INFO", placeInfo);

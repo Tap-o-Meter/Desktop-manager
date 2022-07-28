@@ -11,7 +11,12 @@
               class="titleWrapper d-flex pl-5 pr-5 align-center justify-space-between"
             >
               <span class="header-1-alt ultra-thin">Detalles</span>
-              <v-btn class="ma-2" text color="white" :to="{ name: 'barrels' }">
+              <v-btn
+                class="ma-2"
+                text
+                color="white"
+                :to="{ name: 'barrels', params: { tab: 1 } }"
+              >
                 <v-icon left>mdi-chevron-left</v-icon> back
               </v-btn>
             </div>
@@ -121,7 +126,7 @@
             <v-data-table
               :headers="kegsHeaders"
               :items="kegs"
-              class="elevation-0 pa-3"
+              class="elevation-0 d-flex flex-column"
               style="height:347px;"
               :items-per-page="5"
             >
@@ -156,9 +161,9 @@
             </v-card-title>
             <v-data-table
               :headers="onProcessHeaders"
-              :items="dessertss"
+              :items="kegsOnProcess"
               :items-per-page="5"
-              class="elevation-0 pa-3"
+              class="elevation-0 d-flex flex-column"
               style="height:347px;"
             >
               <template v-slot:no-data>
@@ -200,6 +205,7 @@ export default {
       detailsModal: false,
       itemToModify: null,
       beerDialog: false,
+      kegsOnProcess: [],
       onProcessHeaders: [
         { text: "NOMBRE", sortable: false, value: "name" },
         { text: "ELABORADA", value: "protein", align: "end", sortable: false },
@@ -258,7 +264,7 @@ export default {
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
-    @import "@/assets/styles/components";
+@import "@/assets/styles/components";
 .kegDetails {
   flex: 1;
   width: 100%;
@@ -300,7 +306,13 @@ export default {
 </style>
 <style lang="scss">
 .kegDetails {
+  .v-data-table__wrapper {
+    flex: 1;
+  }
   .v-data-footer {
+    height: 59px;
+  }
+  .v-data-footer__select {
     display: none;
   }
   .v-data-table {

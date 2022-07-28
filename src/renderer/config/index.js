@@ -1,18 +1,20 @@
 import dns from "dns";
 export default {
   BASE_URL: async function() {
-    return "192.168.1.121";
-    // new Promise((resolve, reject) => {
-    //   dns.lookup("beer-control.local", (err, address, family) => {
-    //     if (err) reject(err);
-    //     resolve(address);
-    //   });
-    // });
+    // return "192.168.1.121";
+    return new Promise((resolve, reject) => {
+      dns.lookup("beer-control.local", (err, address, family) => {
+        if (err) reject(err);
+        resolve(address);
+      });
+    });
   },
   animations: {
     nfc: require("../assets/lottie/nfc.json"),
     connect: require("../assets/lottie/connect-device.json"),
-    check: require("../assets/lottie/green-check.json")
+    check: require("../assets/lottie/green-check.json"),
+    hostLoad: require("../assets/lottie/connecting-server.json"),
+    error: require("../assets/lottie/error2.json")
   },
   days: {
     domingo: 0,

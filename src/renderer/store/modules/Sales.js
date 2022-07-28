@@ -21,6 +21,9 @@ const actions = {
     );
     commit("SET_SALES", response.data.data);
   },
+  setSales({ commit }, sales) {
+    commit("SET_SALES", sales);
+  },
   addSale({ commit }, sale) {
     console.log("tamos aquí");
     commit("ADD_SALE", sale);

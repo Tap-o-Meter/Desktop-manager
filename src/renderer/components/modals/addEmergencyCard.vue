@@ -84,7 +84,7 @@ export default {
     open: Boolean,
     handleClose: Function
   },
-  beforeMount: function() {
+  mounted: function() {
     const option = this.connected ? 0 : 1;
     this.animationClass = this.animationClasses[option];
     this.getAnimation(option);

@@ -40,8 +40,9 @@
           height="50"
           class="mr-1 mb-2 logIn white--text"
           :to="{ name: 'dashboard' }"
-          >Login</v-btn
         >
+          Login
+        </v-btn>
       </v-card-actions>
     </v-card>
   </div>

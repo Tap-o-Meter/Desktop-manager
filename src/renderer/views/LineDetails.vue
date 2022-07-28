@@ -3,7 +3,7 @@
     <v-container fluid class="pt-0 ">
       <v-row
         class="black-gradient bottom-round elevation-5"
-        style="height:506px"
+        style="height:506px; overflow:hidden"
       >
         <v-col cols="12" class="pb-0">
           <div
@@ -15,10 +15,11 @@
             </v-btn>
           </div>
         </v-col>
-        <v-col cols="3" class="pl-10">
-          <v-row>
-            <v-avatar color="lightgray" size="120" tile>
+        <v-col cols="3" class="pl-5 d-flex flex-column">
+          <div class="d-flex ">
+            <v-avatar color="lightgray" size="120" class="mb-5" tile>
               <v-img
+                contain
                 :lazy-src="require('@/assets/no-beer.svg')"
                 :src="
                   beer.image !== null
@@ -27,7 +28,7 @@
                 "
               />
             </v-avatar>
-            <v-col cols="7">
+            <v-col cols="7" class="pa-0 mt-5 pl-2">
               <span class="header-4-alt thin white--text">
                 LINEA #{{ line.noLinea }}
               </span>
@@ -59,8 +60,8 @@
                 </div>
               </div>
             </v-col>
-          </v-row>
-          <v-row>
+          </div>
+          <v-row v-if="!line.virtual">
             <v-col>
               <h6 class="header-5-alt white--text">CANTIDAD</h6>
               <div class="d-flex align-center mb-5">
@@ -84,7 +85,7 @@
                   {{ this.merma.toFixed(1) }}%
                 </h6>
               </div>
-              <h6 class="header-5-alt white--text">CANTIDAD</h6>
+              <!-- <h6 class="header-5-alt white--text">CANTIDAD</h6>
               <div class="d-flex align-center mb-5">
                 <v-progress-linear
                   color="amber darken-2"
@@ -94,20 +95,24 @@
                 <h6 class="header-6-alt white--text ml-2" style="width:35px">
                   {{ this.available.toFixed(1) }}%
                 </h6>
-              </div>
-              <v-btn
-                outlined
-                depressed
-                style="width: 100%"
-                color="error"
-                class="mt-3"
-                @click="confirmDisconnect()"
-              >
-                Desconectar línea
-              </v-btn>
+              </div> -->
             </v-col>
           </v-row>
+          <div v-else class="no-apply mb-3">
+            <p class="header-3-alt">¡No aplica!</p>
+          </div>
+          <v-btn
+            outlined
+            depressed
+            style="width: 100%"
+            color="error"
+            class="mb-3"
+            @click="confirmDisconnect()"
+          >
+            Desconectar línea
+          </v-btn>
         </v-col>
+
         <v-col cols="9" style="height:422px">
           <v-btn-toggle
             v-model="toggle_exclusive"
@@ -118,7 +123,7 @@
               Ventas
             </v-btn>
             <v-btn small outlined dark>
-              Datos
+              Información
             </v-btn>
           </v-btn-toggle>
           <v-slide-x-transition>
@@ -131,7 +136,56 @@
               style="height:90%"
             />
             <div v-else class="white--text">
-              más Informacíon
+              <v-container fluid>
+                <v-col cols="12" class="pl-4 relative mb-0">
+                  <v-row class="pb-0">
+                    <v-col class="pb-0">
+                      <v-row class="pa-0">
+                        <v-col class="d-flex flex-column align-start ">
+                          <span class="header-5-alt bold white--text">
+                            Capacidad
+                          </span>
+                          <span class="header-4-alt thin white--text">
+                            {{ keg.capacity }} L
+                          </span>
+                        </v-col>
+                        <v-col class="d-flex flex-column align-start ">
+                          <span class="header-5-alt bold white--text">
+                            Disponible
+                          </span>
+                          <span class="header-4-alt thin white--text">
+                            {{ keg.available }} L
+                          </span>
+                        </v-col>
+                        <v-col class="d-flex flex-column align-start ">
+                          <span class="header-5-alt bold white--text">SRM</span>
+                          <span class="header-4-alt thin white--text ml-1">
+                            {{ beer.srm > 100 ? "NA" : beer.srm }}
+                            <v-avatar
+                              class="ml-1"
+                              size="22"
+                              :color="srmList(beer.srm).color"
+                            />
+                          </span>
+                        </v-col>
+                        <!-- <v-col class="d-flex flex-column align-start ">
+                          <span class="header-5-alt bold white--text">IBU</span>
+                          <span class="header-4-alt thin white--text">
+                            {{ keg.ibu }}
+                          </span>
+                        </v-col> -->
+                      </v-row>
+                    </v-col>
+                  </v-row>
+
+                  <v-col class="d-flex flex-column pa-0" cols="10">
+                    <span class="bold-names white--text">DESCRIPCIÓN</span>
+                    <span class="header-4-alt white--text">
+                      {{ keg.description }}
+                    </span>
+                  </v-col>
+                </v-col>
+              </v-container>
             </div>
           </v-slide-x-transition>
         </v-col>
@@ -256,13 +310,20 @@
     <v-overlay z-index="2000" :value="loader">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
+    <v-snackbar right :value="badLevels" :timeout="0" :multi-line="true">
+      <v-icon color="warning" class="mr-4" v-text="'mdi-alert'" />
+      ¡Niveles anormales!, favor de revisar o cambiar de barril
+      <v-btn color="pink" icon @click="badLevels = false">
+        <v-icon dark v-text="'mdi-close'" />
+      </v-btn>
+    </v-snackbar>
   </div>
 </template>
 <script>
+import config from "../config";
+import Api from "../service/api";
 import { mapGetters, mapState } from "vuex";
 import { BarChart } from "../components/charts";
-
-import Api from "../service/api";
 export default {
   name: "LineDetails",
   components: { BarChart },
@@ -272,6 +333,7 @@ export default {
       toggle_exclusive: 0,
       loader: false,
       confirm: false,
+      badLevels: true,
       sales: [],
       labels: [
         "Taster 2oz",
@@ -312,29 +374,41 @@ export default {
     ...mapState("Session", ["BASE_URL"]),
     ...mapGetters("Session", ["getWorker"]),
     ...mapGetters("Sales", ["getLineSales"]),
+
     keg() {
       return this.getKeg(this.line.idKeg);
     },
+
     status() {
       return this.getStatus(this.line);
     },
+
     beer() {
       return this.getBeer(this.keg.beerId);
     },
+
     available() {
       return (this.keg.available / this.keg.capacity) * 100;
     },
+
     merma() {
       return (this.keg.merma / this.keg.capacity) * 100;
     }
   },
   beforeMount: async function() {
     this.line = this.getLine(this.$route.params.id);
-    let response = await Api().post("/keg_sales", { kegId: this.line.idKeg });
-    this.sales = JSON.parse(
-      JSON.stringify(response.data.data, ["workerId", "concept", "qty"], 4)
-    );
-    this.chartData = this.getBeerSalesByConcept(this.sales);
+    this.badLevels = this.keg.available < 0;
+    try {
+      this.loader = true;
+      let response = await Api().post("/keg_sales", { kegId: this.line.idKeg });
+      this.sales = JSON.parse(
+        JSON.stringify(response.data.data, ["workerId", "concept", "qty"], 4)
+      );
+      this.chartData = this.getBeerSalesByConcept(this.sales);
+      this.loader = false;
+    } catch (e) {
+      this.loader = false;
+    }
   },
   methods: {
     getClass(concept, workerId) {
@@ -342,9 +416,15 @@ export default {
         if (concept == "MERMA") return "merma";
       } else return "claimed";
     },
+
     worker(workerId) {
       return this.getWorker(workerId);
     },
+
+    srmList(srmIndex) {
+      return config.getSrm(srmIndex);
+    },
+
     getBeerSalesByConcept(sales) {
       const { kegId } = this.line;
       const categorySales = [
@@ -360,41 +440,41 @@ export default {
       console.log(sales);
       sales.forEach(sale => {
         if (sale.kegId === kegId) {
-          switch (sale.concept) {
-            case "PINT":
-              if (sale.qty === ".236") categorySales[2]++;
-              else if (sale.qty === ".296") categorySales[3]++;
-              else if (sale.qty === ".473") categorySales[4]++;
-              break;
-            case "TASTER":
-              if (sale.qty === ".06") categorySales[0]++;
-              else if (sale.qty === ".142") categorySales[1]++;
-              break;
-            case "GROWLER":
-              if (sale.qty === "1") categorySales[5]++;
-              else if (sale.qty === "2") categorySales[6]++;
-              else if (sale.qty === "4") categorySales[7]++;
-              break;
-            default:
+          if (sale.concept == "PINT") {
+            if (sale.qty === ".236") categorySales[2]++;
+            else if (sale.qty === ".296") categorySales[3]++;
+            else if (sale.qty === ".473") categorySales[4]++;
+          }
+          if (sale.concept == "TASTER") {
+            if (sale.qty === ".06") categorySales[0]++;
+            else if (sale.qty === ".142") categorySales[1]++;
+          }
+          if (sale.concept == "GROWLER") {
+            if (sale.qty === "1") categorySales[5]++;
+            else if (sale.qty === "2") categorySales[6]++;
+            else if (sale.qty === "4") categorySales[7]++;
           }
         }
       });
       return categorySales;
     },
+
     confirmDisconnect() {
       this.confirm = true;
     },
+
     async disconnectLine() {
       this.loader = true;
-      let response = await Api().post("/disconnectLine", {
-        noLinea: this.line.noLinea
-      });
-      this.loader = false;
-      if (response.data.confirmation) {
-        this.$store.dispatch("Lines/disableLine", { ...this.line });
-        this.$router.push({ name: "barrels" });
-      } else {
-        console.log("valiste");
+      const json_request = { noLinea: this.line.noLinea };
+      try {
+        let response = await Api().post("/disconnectLine", json_request);
+        this.loader = false;
+        if (response.data.confirmation) {
+          this.$store.dispatch("Lines/disableLine", { ...this.line });
+          this.$router.push({ name: "barrels" });
+        } else console.log("valiste");
+      } catch (e) {
+        this.loader = false;
       }
     }
   }
@@ -412,6 +492,16 @@ export default {
   overflow: scroll;
   background: rgb(244, 245, 249);
   padding-top: 0px;
+  .no-apply {
+    display: flex;
+    width: 100%;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    * {
+      color: white;
+    }
+  }
   a {
     text-decoration: none;
   }

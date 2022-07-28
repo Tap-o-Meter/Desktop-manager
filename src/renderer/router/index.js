@@ -32,7 +32,8 @@ export default new Router({
     {
       path: "/barrels",
       name: "barrels",
-      component: Barrels
+      component: Barrels,
+      params: true
     },
     {
       path: "/line-details/:id",

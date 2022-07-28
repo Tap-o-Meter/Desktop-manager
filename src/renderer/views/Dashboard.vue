@@ -48,7 +48,7 @@
                       />
                     </div>
                   </v-col>
-                  <v-col cols="5" class="pt-0">
+                  <v-col v-if="indexKeg != null" cols="5" class="pt-0">
                     <div class="detail ma-1 pa-1">
                       <span class="header-3-alt mb-5 ml-3">
                         {{ beer(keg).name }}
@@ -85,7 +85,9 @@
                                 <p
                                   class="header-2-alt ultra-thin mb-1 accented"
                                 >
-                                  {{ fixIt(keg.available) }}
+                                  {{
+                                    keg.available > 0 ? fixIt(keg.available) : 0
+                                  }}
                                   <span class="header-5-alt light thin">
                                     /{{ fixIt(keg.capacity) }}L
                                   </span>
@@ -237,16 +239,6 @@
                     </v-list-item-action>
                   </v-list-item>
                 </v-list>
-                <!-- {{ this.topWorkers }} -->
-                <!-- <div>Word of the Day</div>
-                <p class="display-1 text--white">
-                  be•nev•o•lent
-                </p>
-                <p>adjective</p>
-                <div class="text--white">
-                  well meaning and kindly.<br />
-                  "a benevolent smile"
-                </div> -->
               </v-card-text>
             </v-card>
           </v-col>
@@ -264,24 +256,28 @@
         </div>
       </div>
     </div>
+
+    <v-overlay z-index="2000" :value="loader">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 <script>
-import { WorkerCell, BarrelDashCell, ChipStat } from "../components/cells";
+import Api from "../service/api";
 import { mapState, mapGetters } from "vuex";
 import { socket, connectPort } from "../api";
+import { WorkerCell, BarrelDashCell, ChipStat } from "../components/cells";
 export default {
   name: "Dashboard",
   components: { WorkerCell, BarrelDashCell, ChipStat },
-  data() {
-    return {
-      indexKeg: 0,
-      search: "",
-      cards: [],
-      topWorkers: [],
-      totalSold: 0
-    };
-  },
+  data: () => ({
+    indexKeg: null,
+    search: "",
+    cards: [],
+    topWorkers: [],
+    totalSold: 0,
+    loader: false
+  }),
   methods: {
     setSelected(key) {
       this.indexKeg = key;
@@ -289,14 +285,13 @@ export default {
     beer(keg) {
       return this.getBeer(keg.beerId);
     },
-    fixIt(n) {
-      return n - Math.floor(n) !== 0 ? n.toFixed(1) : n;
-    }
+    fixIt: n => (n - Math.floor(n) !== 0 ? n.toFixed(1) : n)
   },
   computed: {
     ...mapState("Session", ["workers", "BASE_URL"]),
-    ...mapState("Lines", ["lines"]),
+    ...mapState("Lines", ["lines", "kegs"]),
     ...mapState("Sales", ["sales"]),
+    ...mapState("CardReader", ["connected"]),
     ...mapGetters("Sales", ["getSalesByWorker"]),
     ...mapGetters("Stock", ["getCriticalStock"]),
     ...mapGetters("Lines", ["getKeg", "getBeer", "getCriticalKegs"]),
@@ -304,27 +299,18 @@ export default {
       const { getKeg, lines, indexKeg } = this;
       return getKeg(lines[indexKeg].idKeg);
     },
-
     formatWorkers() {
       if (this.sales !== null) {
         const workersSales = [];
         var totalSold = 0;
         this.getSalesByWorker(this.workers).forEach((item, i) => {
-          workersSales.push({
-            ...this.workers[i],
-            qty: item
-          });
+          workersSales.push({ ...this.workers[i], qty: item });
           totalSold += parseFloat(item);
         });
-
-        // workersSales.sort(function(a, b) {
-        //   return b.qty - a.qty;
-        // });
         this.totalSold = totalSold.toFixed(2);
         return workersSales;
       } else return [];
     },
-
     chips() {
       const cards = [];
       cards.push({
@@ -371,13 +357,39 @@ export default {
       return cards;
     }
   },
-  beforeMount: function() {
-    this.$store.dispatch("Sales/getSales");
-    this.$store.dispatch("Session/getWorkers");
-    this.$store.dispatch("Stock/getStock");
-    socket().emit("client connected");
-    connectPort(null, this.$store);
+  beforeMount: async function() {
+    this.loader = true;
+    try {
+      let response = await Api().get("/getSummary");
+      if (response.data.confirmation) {
+        const { data } = response.data;
+
+        const { kegs, lines, beers, emergencyCard } = data;
+        const { stock, workers, placeInfo, sales } = data;
+
+        const linesData = { data: kegs, lines, beers, emergencyCard };
+        console.warn(linesData);
+        this.$store.dispatch("Lines/setLines", linesData);
+        this.$store.dispatch("Session/setWorkers", workers);
+        this.$store.dispatch("Sales/setSales", sales);
+        this.$store.dispatch("Stock/setStock", stock);
+        this.$store.dispatch("Session/setPlaceInfo", placeInfo);
+        this.indexKeg = this.lines.findIndex(line => line.idKeg.length > 0);
+        this.loader = false;
+      }
+    } catch (e) {
+      // alert("valio madres");
+      this.loader = false;
+    }
+    // console.warn(this.kegs);
+    // this.$store.dispatch("Sales/getSales");
+    // this.$store.dispatch("Session/getWorkers");
+    // this.$store.dispatch("Stock/getStock");
+
+    socket().emit("desk_manager_connected");
+    this.connected ? null : connectPort(null, this.$store);
   },
+
   watch: {
     sales: function(newVal, oldVal) {
       if (newVal !== null) {
@@ -385,9 +397,7 @@ export default {
         this.getSalesByWorker(this.workers).forEach((item, i) => {
           workersSales.push({ ...this.workers[i], qty: item });
         });
-        workersSales.sort(function(a, b) {
-          return b.qty - a.qty;
-        });
+        workersSales.sort((a, b) => b.qty - a.qty);
         this.topWorkers = workersSales;
       }
     }

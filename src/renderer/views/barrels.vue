@@ -272,7 +272,10 @@ export default {
       const { getBeer, getKeg, getStatus } = this;
       if (this.tab === 0) {
         const filteredByName = this.lines.filter(line => {
-          if (line.idKeg.length > 1) {
+          if (line.idKeg.length > 2) {
+            if (this.getKeg(line.idKeg) == undefined) {
+              console.warn(line.noLinea);
+            }
             return this.getBeer(this.getKeg(line.idKeg).beerId)
               .name.toUpperCase()
               .includes(search.toUpperCase());
@@ -438,6 +441,9 @@ export default {
         return applyedFilter;
       }
     }
+  },
+  mounted: function() {
+    if (this.$route.params.tab) this.tab = this.$route.params.tab;
   }
 };
 </script>

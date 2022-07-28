@@ -18,9 +18,14 @@
                 {{ worker.nombre.charAt(0) + worker.apellidos.charAt(0) }}
               </span>
             </v-avatar>
-            <v-btn class="mt-3" outlined @click.stop="editWorkerShow = true">
-              <v-icon left v-text="'mdi-pencil'" />Editar
-            </v-btn>
+            <v-row class="mt-3 pl-5">
+              <v-btn depressed outlined @click.stop="editWorkerShow = true">
+                <v-icon left v-text="'mdi-pencil'" />Editar
+              </v-btn>
+              <v-btn color="error" class="ml-2" @click.stop="confirm = true">
+                <v-icon v-text="'mdi-trash-can-outline'" />
+              </v-btn>
+            </v-row>
           </v-col>
           <v-col cols="4" class="d-flex mt-3 flex-column">
             <span class="xs-bold-subtitles ">Nombre:</span>
@@ -183,12 +188,6 @@
                           </v-row>
                         </v-container>
                       </div>
-                      <!-- <v-data-table
-                        :headers="headers"
-                        :items="desserts"
-                        :items-per-page="5"
-                        class="elevation-0"
-                      /> -->
                     </v-card>
                   </v-col>
                 </v-row>
@@ -286,16 +285,6 @@
                   >
                     Editar
                   </v-btn>
-                  <v-btn
-                    outlined
-                    depressed
-                    style="width: 100%"
-                    color="error"
-                    class="mt-3"
-                    @click.stop="confirm = true"
-                  >
-                    Eliminar
-                  </v-btn>
                 </v-col>
               </v-row>
               <SetSchedule
@@ -328,12 +317,15 @@
           <v-btn color="red darken-1" text @click="confirm = false">
             Cancelar
           </v-btn>
-          <v-btn color="primary darken-1" text @click="deleteItem()">
+          <v-btn color="primary darken-1" text @click="deleteWorker()">
             Confirmar
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-overlay z-index="2000" :value="loader">
+      <v-progress-circular indeterminate size="64"></v-progress-circular>
+    </v-overlay>
   </div>
 </template>
 <script>
@@ -347,6 +339,7 @@ export default {
   components: { HorizontalBarChart, SetSchedule, AddWorker },
   data() {
     return {
+      loader: false,
       tab: null,
       dialog: false,
       editWorkerShow: false,
@@ -355,101 +348,11 @@ export default {
       desgloseIndex: 0,
       items: ["Resumen", "Historial", "Horario"],
       barLabels: ["Vasos", "Tasters", "Growlers"],
-      headers: [
-        { text: "Dessert (100g serving)", sortable: false, value: "name" },
-        { text: "Calories", value: "calories" },
-        { text: "Fat (g)", value: "fat" },
-        { text: "Carbs (g)", value: "carbs" },
-        { text: "Protein (g)", value: "protein" },
-        { text: "Iron (%)", value: "iron" }
-      ],
       historyHeaders: [
         { text: "Cerveza", value: "beerName" },
         { text: "Concepto", value: "concept", align: "end" },
         { text: "Cantidad", value: "qty", align: "end" },
         { text: "Fecha", value: "date", align: "end" }
-      ],
-      desserts: [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: "1%"
-        },
-        {
-          name: "Ice cream sandwich",
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-          iron: "1%"
-        },
-        {
-          name: "Eclair",
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-          iron: "7%"
-        },
-        {
-          name: "Cupcake",
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-          iron: "8%"
-        },
-        {
-          name: "Gingerbread",
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-          iron: "16%"
-        },
-        {
-          name: "Jelly bean",
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-          iron: "0%"
-        },
-        {
-          name: "Lollipop",
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-          iron: "2%"
-        },
-        {
-          name: "Honeycomb",
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-          iron: "45%"
-        },
-        {
-          name: "Donut",
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-          iron: "22%"
-        },
-        {
-          name: "KitKat",
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-          iron: "6%"
-        }
       ],
       weekday: [0, 1, 2, 3, 4, 5, 6],
       value: "",
@@ -464,50 +367,44 @@ export default {
     ...mapState("Session", ["BASE_URL"]),
     ...mapGetters("Lines", ["getKeg", "getBeer"]),
     ...mapGetters("Sales", ["getMermaFromWorker"]),
+
     worker() {
       return this.$route.params.worker;
     },
+
     currentMonth() {
       return config.currentMonth().name;
     },
+
     selectedMonth() {
       return config.months[this.period].name;
     },
+
     months() {
       return config.months.filter(
         month => month.value <= config.currentMonth().value
       );
     },
+
     getMerma() {
       return this.getMermaFromWorker(this.worker);
     },
+
     sectionedSales() {
       var sections = { vasos: [], tasters: [], growlers: [] };
       this.sales.forEach((sale, i) => {
-        switch (sale.concept) {
-          case "PINT":
-            sections.vasos.push(sale);
-            break;
-          case "TASTER":
-            sections.tasters.push(sale);
-            break;
-          case "GROWLER":
-            sections.growlers.push(sale);
-            break;
-        }
+        if (sale.concept == "PINT") sections.vasos.push(sale);
+
+        if (sale.concept == "TASTER") sections.tasters.push(sale);
+
+        if (sale.concept == "GROWLER") sections.growlers.push(sale);
       });
-      if (
-        sections.vasos.length > 0 ||
-        sections.tasters.length > 0 ||
-        sections.growlers.length > 0
-      ) {
-        this.salesCounter = [
-          sections.vasos.length,
-          sections.tasters.length,
-          sections.growlers.length
-        ];
+      const { vasos, tasters, growlers } = sections;
+      if (vasos.length > 0 || tasters.length > 0 || growlers.length > 0) {
+        this.salesCounter = [vasos.length, tasters.length, growlers.length];
       }
     },
+
     generateDate() {
       var days = [];
       this.worker.horario.forEach((horario, i) => {
@@ -537,28 +434,47 @@ export default {
     getEventColor(event) {
       return event.color;
     },
+
     upDateConceptDetails(a) {
       console.log(a);
       this.desgloseIndex = a;
     },
+
     closeModal() {
       this.dialog = false;
     },
+
     async changeRoute() {
       console.log("esta shit está aquí");
-      let response = await Api().post("/worker_sales", {
-        id: this.worker._id,
-        period: this.period
-      });
-      if (response.data.confirmation === "success") {
-        this.history = response.data.data;
-      } else {
-        console.log(response);
+      this.getWorkerData(this.period);
+    },
+
+    editWorkerClose(should_reset) {
+      this.editWorkerShow = false;
+      if (should_reset) this.$router.push({ name: "workers" });
+    },
+
+    async deleteWorker() {
+      this.loader = true;
+      try {
+        let response = await Api().post("/deleteWorker", {
+          id: this.worker._id
+        });
+        this.loader = false;
+        if (response.data.confirmation) {
+          this.$router.push({ name: "workers" });
+          // this.$store.dispatch("Stock/removeStock", this.itemToDelete);
+          this.confirm = false;
+          this.closeModal();
+        } else {
+          console.log(response.data);
+          console.log("valiste");
+        }
+      } catch (e) {
+        this.loader = false;
       }
     },
-    editWorkerClose() {
-      this.editWorkerShow = false;
-    },
+
     beerName(kegId) {
       const keg = this.getKeg(kegId);
       if (keg) {
@@ -567,6 +483,7 @@ export default {
         console.warn(kegId);
       }
     },
+
     parseQty(qty) {
       var formatedQty;
       if (qty.charAt(0) == "." || qty.charAt(0) == ".") {
@@ -577,17 +494,34 @@ export default {
       }
       return formatedQty;
     },
+
     parseDate(date) {
       return config.parseDate(date);
+    },
+
+    async getWorkerData(period) {
+      this.loader = true;
+      const request_json = { id: this.worker._id };
+      if (period) request_json.period = period;
+      try {
+        let response = await Api().post("/worker_sales", request_json);
+        if (response.data.confirmation === "success") {
+          this.loader = false;
+          if (!period) this.sales = response.data.data;
+          this.history = response.data.data;
+        } else {
+          console.log(response);
+          this.loader = false;
+        }
+      } catch (e) {
+        console.log("mamó");
+        this.loader = false;
+      }
     }
   },
   mounted: async function() {
     this.period = config.currentMonth().value;
-    let response = await Api().post("/worker_sales", { id: this.worker._id });
-    console.log("las ventas 😫");
-    console.log(response.data.data);
-    this.sales = response.data.data;
-    this.history = this.sales;
+    this.getWorkerData();
   },
   watch: {
     sales: function(newVal, oldVal) {

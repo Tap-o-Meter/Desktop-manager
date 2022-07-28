@@ -43,6 +43,7 @@
                       <v-text-field
                         v-model="abv"
                         outlined
+                        @keypress="filter"
                         label="ABV*"
                         required
                         placeholder="3.5"
@@ -54,6 +55,7 @@
                       <v-text-field
                         v-model="ibu"
                         outlined
+                        @keypress="filter"
                         label="IBU*"
                         required
                         placeholder="80"
@@ -66,6 +68,7 @@
                         v-model="capacity"
                         :rules="capacityRules"
                         outlined
+                        @keypress="filter"
                         label="Cap.*"
                         required
                         placeholder="20"
@@ -90,6 +93,7 @@
                             :rules="dateRules"
                             placeholder="YYYY-MM-DD"
                             outlined
+                            readonly
                             prepend-inner-icon="mdi-calendar-month"
                             v-bind="attrs"
                             v-on="on"
@@ -117,20 +121,19 @@
                             v-model="date2"
                             label="Fecha de enbarrilado"
                             :rules="date2Rules"
-                            placeholder
                             placeholder="YYYY-MM-DD"
                             outlined
                             prepend-inner-icon="mdi-calendar-month"
                             readonly
                             v-bind="attrs"
                             v-on="on"
-                          ></v-text-field>
+                          />
                         </template>
                         <v-date-picker
                           v-model="date2"
                           no-title
                           @input="menu2 = false"
-                        ></v-date-picker>
+                        />
                       </v-menu>
                     </v-col>
                     <v-col class="pa-0" offset="10" cols="2">
@@ -185,27 +188,27 @@ export default {
       marker: true,
       beerId: "",
       cant: 1,
-      beerRules: [v => !!v || "El nombre es requerido"],
+      beerRules: [v => !!v || "Requerido"],
       abv: "",
       abvRules: [
-        v => !!v || "El ABV es requerido",
+        v => !!v || "Requerido",
         v => (v && !isNaN(parseFloat(v))) || "El ABV debe de ser un número"
       ],
       ibu: "",
       ibuRules: [
-        v => !!v || "El IBU es requerido",
+        v => !!v || "Requerido",
         v => (v && !isNaN(parseInt(v))) || "El IBU debe de ser un número"
       ],
       capacity: "",
       capacityRules: [
-        v => !!v || "La capacidad es requerida",
+        v => !!v || "Requerido",
         v =>
           (v && !isNaN(parseFloat(v))) || "La capacidad debe de ser un número"
       ],
       date: "",
-      dateRules: [v => !!v || "La fecha de elaboración es requerida"],
+      dateRules: [v => !!v || "Requerido"],
       date2: "",
-      date2Rules: [v => !!v || "La fecha de enbarrilado es requerida"],
+      date2Rules: [v => !!v || "Requerido"],
       menu1: false,
       menu2: false
     };
@@ -232,6 +235,16 @@ export default {
   },
 
   methods: {
+    filter: function(evt) {
+      evt = evt ? evt : window.event;
+      let expect = evt.target.value.toString() + evt.key.toString();
+
+      if (!/^[-+]?[0-9]*\.?[0-9]*$/.test(expect)) {
+        evt.preventDefault();
+      } else {
+        return true;
+      }
+    },
     toggleMarker() {
       this.marker = !this.marker;
     },
@@ -246,24 +259,31 @@ export default {
     async createUser() {
       if (this.$refs.form.validate()) {
         const { marker, capacity, beerId, abv, ibu, date, date2, cant } = this;
-        this.loader = true;
-        let response = await Api().post("/addKeg", {
-          qty: cant,
-          prepared: date,
-          released: date2,
-          capacity: marker ? capacity : this.galToliter(),
-          beerId,
-          abv,
-          ibu
-        });
-        this.loader = false;
-        if (response.data.confirmation === "success") {
-          console.log(response.data);
-          this.$store.dispatch("Lines/addKeg", { ...response.data.data, cant });
-          this.closeModal();
-        } else {
-          console.log(response.data);
-          console.log("valiste");
+        try {
+          this.loader = true;
+          let response = await Api().post("/addKeg", {
+            qty: cant,
+            prepared: date,
+            released: date2,
+            capacity: marker ? capacity : this.galToliter(),
+            beerId,
+            abv,
+            ibu
+          });
+          this.loader = false;
+          if (response.data.confirmation === "success") {
+            console.log(response.data);
+            this.$store.dispatch("Lines/addKeg", {
+              ...response.data.data,
+              cant
+            });
+            this.closeModal();
+          } else {
+            console.log(response.data);
+            console.log("valiste");
+          }
+        } catch (e) {
+          this.loader = false;
         }
       }
     },

@@ -75,6 +75,7 @@
                       <v-text-field
                         v-model="volume"
                         outlined
+                        @keypress="filter"
                         :rules="volumeRules"
                         label="Volumen*"
                         required
@@ -86,6 +87,7 @@
                       <v-text-field
                         v-model="lead_time"
                         outlined
+                        @keypress="filter"
                         :rules="leadRules"
                         label="Tiempo*"
                         required
@@ -96,6 +98,7 @@
                       <v-text-field
                         v-model="min_product"
                         outlined
+                        @keypress="filter"
                         :rules="minRules"
                         label="Cant. minima.*"
                         required
@@ -130,9 +133,7 @@ import axios from "axios";
 import ImageInput from "../form/ImageInput.vue";
 export default {
   name: "AddWorker",
-  components: {
-    ImageInput: ImageInput
-  },
+  components: { ImageInput: ImageInput },
   data() {
     return {
       loader: false,
@@ -140,32 +141,19 @@ export default {
       image: null,
       name: "",
       nameRules: [
-        v => !!v || "El nombre es requerido",
+        v => !!v || "Requerido",
         v => (v && v.length > 3) || "El nombre debe de ser mayor a 3 letras"
       ],
       brand: "",
-      brandRules: [v => !!v || "La Marca es requerida"],
+      brandRules: [v => !!v || "Requerido"],
       unity: "",
-      unityRules: [v => !!v || "Seleccionar unidades"],
+      unityRules: [v => !!v || "Requerido"],
       volume: "",
-      volumeRules: [
-        v => !!v || "El volumen es requerido",
-        v => (v && !isNaN(parseFloat(v))) || "El volumen debe de ser un número"
-      ],
+      volumeRules: [v => !!v || "Requerido"],
       lead_time: "",
-      leadRules: [
-        v => !!v || "El tiempo de espera es requerido",
-        v =>
-          (v && !isNaN(parseFloat(v))) ||
-          "El tiempo de espera debe de ser un número"
-      ],
+      leadRules: [v => !!v || "Requerido"],
       min_product: "",
-      minRules: [
-        v => !!v || "El numero mínimo de producto es requerido",
-        v =>
-          (v && !isNaN(parseFloat(v))) ||
-          "El número mínimo de producto debe de ser un número"
-      ],
+      minRules: [v => !!v || "Requerido"],
       unities: ["kg", "g", "mg", "lb", "oz", "Lt", "mL", "gal", "qt"]
     };
   },
@@ -185,34 +173,41 @@ export default {
     toggleMarker() {
       this.marker = !this.marker;
     },
+    filter: function(evt) {
+      evt = evt ? evt : window.event;
+      let expect = evt.target.value.toString() + evt.key.toString();
+
+      if (!/^[-+]?[0-9]*\.?[0-9]*$/.test(expect)) {
+        evt.preventDefault();
+      } else {
+        return true;
+      }
+    },
     async createUser() {
       if (this.$refs.form.validate()) {
-        let {
-          image,
-          name,
-          brand,
-          unity,
-          volume,
-          lead_time,
-          min_product
-        } = this;
-        this.loader = true;
-        const formData = new FormData();
-        image ? formData.append("file", image.imageFile) : null;
-        formData.append("name", name);
-        formData.append("brand", brand);
-        formData.append("unity", unity);
-        formData.append("volume", volume);
-        formData.append("lead_time", lead_time);
-        formData.append("min_product", min_product);
-        let response = await Api().post("/addStock", formData);
-        this.loader = false;
-        if (response.data.confirmation === "success") {
-          this.$store.dispatch("Stock/addStock", response.data.data);
-          this.closeModal();
-        } else {
-          console.log(response.data);
-          console.log("valiste");
+        try {
+          const { min_product } = this;
+          const { image, name, brand, unity, volume, lead_time } = this;
+          this.loader = true;
+          const formData = new FormData();
+          image ? formData.append("file", image.imageFile) : null;
+          formData.append("name", name);
+          formData.append("brand", brand);
+          formData.append("unity", unity);
+          formData.append("volume", volume);
+          formData.append("lead_time", lead_time);
+          formData.append("min_product", min_product);
+          let response = await Api().post("/addStock", formData);
+          this.loader = false;
+          if (response.data.confirmation === "success") {
+            this.$store.dispatch("Stock/addStock", response.data.data);
+            this.closeModal();
+          } else {
+            console.log(response.data);
+            console.log("valiste");
+          }
+        } catch (e) {
+          this.loader = false;
         }
       }
     },

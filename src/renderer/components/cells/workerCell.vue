@@ -27,7 +27,7 @@
           </span>
           <p class="bold-names text-center ">en el mes</p>
         </v-col>
-        <v-col
+        <!-- <v-col
           v-if="worker.horario.length > 0"
           class="d-flex justify-start align-center "
         >
@@ -42,7 +42,7 @@
             <span :class="days.indexOf('sábado') > 1 ? 'dayWork' : ''">S</span>
             <span :class="days.indexOf('domingo') > 1 ? 'dayWork' : ''">D</span>
           </span>
-        </v-col>
+        </v-col> -->
       </v-row>
     </v-container>
 

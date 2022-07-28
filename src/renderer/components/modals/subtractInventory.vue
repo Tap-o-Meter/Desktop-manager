@@ -98,17 +98,21 @@ export default {
     },
     async subtractInventory() {
       const { qty, isExtracting } = this;
-      this.loader = true;
-      const path = isExtracting ? "/subtract_inventory" : "/add_inventory";
-      let response = await Api().post(path, { items: qty });
-      this.loader = false;
-      if (response.data.confirmation === "success") {
-        const action = this.worker ? "Stock/takeStock" : "Stock/refillStock";
-        this.$store.dispatch(action, qty);
-        this.handleClose(false);
-      } else {
-        console.log(response.data);
-        console.log("valiste");
+      try {
+        this.loader = true;
+        const path = isExtracting ? "/subtract_inventory" : "/add_inventory";
+        let response = await Api().post(path, { items: qty });
+        this.loader = false;
+        if (response.data.confirmation === "success") {
+          const action = this.worker ? "Stock/takeStock" : "Stock/refillStock";
+          this.$store.dispatch(action, qty);
+          this.handleClose(false);
+        } else {
+          console.log(response.data);
+          console.log("valiste");
+        }
+      } catch (e) {
+        this.loader = false;
       }
     }
   },

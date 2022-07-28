@@ -75,6 +75,7 @@
                       <v-text-field
                         v-model="abv"
                         outlined
+                        @keypress="filter"
                         label="ABV*"
                         :rules="abvRules"
                         required
@@ -87,6 +88,7 @@
                       <v-text-field
                         v-model="ibu"
                         outlined
+                        @keypress="filter"
                         :rules="ibuRules"
                         label="IBU*"
                         required
@@ -244,7 +246,7 @@ export default {
       abv: "",
       ibu: "",
       type: "",
-      descripcion: "",
+      description: "",
       srm: "",
       nameRules: [
         v => !!v || "El nombre es requerido",
@@ -295,7 +297,7 @@ export default {
       this.abv = this.beer.abv;
       this.ibu = this.beer.ibu;
       this.type = this.beer.type;
-      this.descripcion = this.beer.description;
+      this.description = this.beer.description;
       this.srm = this.srmList[this.beer.srm - 1].srm;
       if (this.beer.image) {
         this.image = {
@@ -308,39 +310,53 @@ export default {
     toggleMarker() {
       this.marker = !this.marker;
     },
+    filter: function(evt) {
+      evt = evt ? evt : window.event;
+      let expect = evt.target.value.toString() + evt.key.toString();
+
+      if (!/^[-+]?[0-9]*\.?[0-9]*$/.test(expect)) {
+        evt.preventDefault();
+      } else {
+        return true;
+      }
+    },
     async createUser() {
       if (this.$refs.form.validate()) {
         const { image, beerColorOpt, color } = this;
         //console.warn(s2.toString(16));
         this.loader = true;
-        const formData = new FormData();
-        const fixedColor = !beerColorOpt
-          ? parseInt("0x" + color.substring(1))
-          : this.srm;
-        image
-          ? image.imageFile
-            ? formData.append("file", image.imageFile)
-            : null
-          : null;
-        this.isEditing ? formData.append("id", this.beer._id) : null;
-        formData.append("name", this.name);
-        formData.append("style", this.style);
-        formData.append("brand", this.brand);
-        formData.append("abv", this.abv);
-        formData.append("ibu", this.ibu);
-        formData.append("srm", fixedColor);
-        formData.append("type", this.type);
-        formData.append("descripcion", this.descripcion);
-        const path = this.isEditing ? "/editBeer" : "/addBeer";
-        let response = await Api().post(path, formData);
-        this.loader = false;
-        if (response.data.confirmation === "success") {
-          const action = this.isEditing ? "Lines/editBeer" : "Lines/addBeer";
-          this.$store.dispatch(action, response.data.data);
-          this.closeModal(response.data.data);
-        } else {
-          console.log(response.data);
-          console.log("valiste");
+        try {
+          const formData = new FormData();
+          const fixedColor = !beerColorOpt
+            ? parseInt("0x" + color.substring(1))
+            : this.srm;
+          image
+            ? image.imageFile
+              ? formData.append("file", image.imageFile)
+              : null
+            : null;
+          this.isEditing ? formData.append("id", this.beer._id) : null;
+          formData.append("name", this.name);
+          formData.append("style", this.style);
+          formData.append("brand", this.brand);
+          formData.append("abv", this.abv);
+          formData.append("ibu", this.ibu);
+          formData.append("srm", fixedColor);
+          formData.append("type", this.type);
+          formData.append("description", this.description);
+          const path = this.isEditing ? "/editBeer" : "/addBeer";
+          let response = await Api().post(path, formData);
+          this.loader = false;
+          if (response.data.confirmation === "success") {
+            const action = this.isEditing ? "Lines/editBeer" : "Lines/addBeer";
+            this.$store.dispatch(action, response.data.data);
+            this.closeModal(response.data.data);
+          } else {
+            console.log(response.data);
+            console.log("valiste");
+          }
+        } catch (e) {
+          this.loader = false;
         }
       }
     },
@@ -355,7 +371,7 @@ export default {
         this.abv = "";
         this.ibu = "";
         this.type = "";
-        this.descripcion = "";
+        this.description = "";
         this.srm = "";
       }
       if (this.addKeg) this.handleClose(false, id);

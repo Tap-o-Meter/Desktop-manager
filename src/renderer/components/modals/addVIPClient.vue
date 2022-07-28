@@ -222,7 +222,7 @@ export default {
         animationData: config.animations[this.animationList[index]]
       });
     },
-    closeScreen(data) {
+    closeScreen(data, should_reset) {
       this.handleClose(data);
       this.$refs.form.resetValidation();
       this.name = "";

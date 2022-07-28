@@ -212,6 +212,7 @@ export default {
       itemToDelete: -1,
       itemToModify: null,
       selected: [],
+      stock: [],
       headers: [
         { text: "", value: "image", align: "start", width: 100 },
         { text: "NOMBRE", align: "start", sortable: false, value: "name" },
@@ -222,7 +223,7 @@ export default {
     };
   },
   computed: {
-    ...mapState("Stock", ["stock"]),
+    // ...mapState("Stock", ["stock"]),
     ...mapState("Session", ["BASE_URL"])
   },
   methods: {
@@ -254,29 +255,44 @@ export default {
     },
     async deleteItem() {
       this.loader = true;
-      let response = await Api().post("/deletStock", {
-        id: this.itemToDelete
-      });
-      this.loader = false;
-      if (response.data.confirmation) {
-        this.$store.dispatch("Stock/removeStock", this.itemToDelete);
+      try {
+        let response = await Api().post("/deletStock", {
+          id: this.itemToDelete
+        });
+        this.loader = false;
+        if (response.data.confirmation) {
+          this.$store.dispatch("Stock/removeStock", this.itemToDelete);
+          this.closeModal();
+        } else {
+          console.log(response.data);
+          console.log("valiste");
+        }
+      } catch (e) {
         this.confirm = false;
-        this.closeModal();
-      } else {
-        console.log(response.data);
-        console.log("valiste");
+      }
+    },
+    async getStock() {
+      this.loader = true;
+      try {
+        let response = await Api().get("/getStock");
+        if (response.data.confirmation) {
+          this.stock = response.data.data;
+          this.loader = false;
+        }
+      } catch (e) {
+        this.loader = false;
       }
     }
   },
   beforeMount: function() {
-    this.$store.dispatch("Stock/getStock");
+    this.getStock();
   }
 };
 </script>
 <style scoped lang="scss">
 @import "@/assets/styles/colors";
 @import "@/assets/styles/texts";
-    @import "@/assets/styles/components";
+@import "@/assets/styles/components";
 .stockWrapper {
   position: relative;
   flex: 1;

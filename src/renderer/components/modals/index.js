@@ -12,6 +12,7 @@ import ConnectLine from "./connectLine";
 import KegDetails from "./kegDetails";
 import AddEmergencyCard from "./addEmergencyCard";
 import AddVIPClient from "./addVIPClient";
+import GettingHost from "./gettingHost";
 
 export {
   AddBarrel,
@@ -27,5 +28,6 @@ export {
   ConnectLine,
   KegDetails,
   AddEmergencyCard,
-  AddVIPClient
+  AddVIPClient,
+  GettingHost
 };

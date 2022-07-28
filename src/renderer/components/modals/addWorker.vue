@@ -243,7 +243,7 @@ export default {
     worker: Object
   },
 
-  beforeMount: function() {
+  mounted: function() {
     const option = this.connected ? 0 : 1;
     this.animationClass = this.animationClasses[option];
     this.getAnimation(option);
@@ -311,7 +311,7 @@ export default {
     closeModal() {
       this.dialog = false;
     },
-    closeScreen() {
+    closeScreen(should_reset) {
       if (!this.worker) {
         this.$refs.form.resetValidation();
         this.image = null;
@@ -328,35 +328,39 @@ export default {
         this.getAnimation(option);
         this.message = this.messageList[option];
       }
-      this.handleClose();
+      this.handleClose(should_reset);
     },
     async createUser() {
       if (this.$refs.form.validate()) {
         const url = this.worker ? "/editPersonal" : "/addPersonal";
-        let { image, nombre, apellidos, cardId } = this;
-        this.loader = true;
-        const formData = new FormData();
-        image
-          ? image.imageFile
-            ? formData.append("file", image.imageFile)
-            : null
-          : null;
-        this.worker ? formData.append("id", this.worker._id) : null;
-        formData.append("nombre", nombre);
-        formData.append("apellidos", apellidos);
-        formData.append("cardId", cardId);
-        let response = await Api().post(url, formData);
-        this.loader = false;
-        if (response.data.confirmation === "success") {
-          console.log(response.data.data);
-          const action = this.worker
-            ? "Session/updateWorker"
-            : "Session/newWorker";
-          this.$store.dispatch(action, response.data.data);
-          this.closeScreen();
-        } else {
-          console.log(response.data);
-          console.log("valiste");
+        try {
+          let { image, nombre, apellidos, cardId } = this;
+          this.loader = true;
+          const formData = new FormData();
+          image
+            ? image.imageFile
+              ? formData.append("file", image.imageFile)
+              : null
+            : null;
+          this.worker ? formData.append("id", this.worker._id) : null;
+          formData.append("nombre", nombre);
+          formData.append("apellidos", apellidos);
+          formData.append("cardId", cardId);
+          let response = await Api().post(url, formData);
+          this.loader = false;
+          if (response.data.confirmation === "success") {
+            console.log(response.data.data);
+            const action = this.worker
+              ? "Session/updateWorker"
+              : "Session/newWorker";
+            this.$store.dispatch(action, response.data.data);
+            this.closeScreen(true);
+          } else {
+            console.log(response.data);
+            alert("La tarjeta ingresada ya fue registrada");
+          }
+        } catch (e) {
+          this.loader = false;
         }
         // this.loader = true;
         // let response = await Api().post("/addPersonal", {

@@ -44,6 +44,15 @@
                       </template>
                       <template v-slot:item="data">
                         <span v-text="parseDate(data.item.released)" />
+                        <v-spacer />
+                        <span
+                          v-text="data.item.status"
+                          :class="
+                            data.item.status == 'FULL'
+                              ? 'green--text'
+                              : 'red--text'
+                          "
+                        />
                       </template>
                     </v-select>
                   </v-col>
@@ -207,21 +216,25 @@ export default {
       if (this.$refs.form.validate()) {
         const { keg, line, status } = this;
         this.loader = true;
-        let response = await Api().post("/connect-line", {
-          id: line,
-          newStatus: status,
-          newKeg: keg._id
-        });
-        this.loader = false;
-        if (response.data.confirmation === "success") {
-          this.$store.dispatch("Lines/replaceLine", {
-            data: response.data.data,
-            newStatus: status
+        try {
+          let response = await Api().post("/connect-line", {
+            id: line,
+            newStatus: status,
+            newKeg: keg._id
           });
-          this.closeModal();
-        } else {
-          console.log(response.data);
-          console.log("valiste");
+          this.loader = false;
+          if (response.data.confirmation === "success") {
+            this.$store.dispatch("Lines/replaceLine", {
+              data: response.data.data,
+              newStatus: status
+            });
+            this.closeModal();
+          } else {
+            console.log(response.data);
+            console.log("valiste");
+          }
+        } catch (e) {
+          this.loader = false;
         }
       }
     },
