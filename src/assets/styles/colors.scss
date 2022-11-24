@@ -1,0 +1,27 @@
+$blue: #00acc1;
+$light-blue: #26c6da;
+.black-gradient {
+  background-color: #485461;
+  background-image: linear-gradient(315deg, #485461 0%, #28313b 74%);
+}
+$blue-gradient: linear-gradient(60deg, #26c6da, #00acc1);
+$red-gradient: linear-gradient(87deg, #f5365c, #d81b60);
+$yellow-gradient: linear-gradient(60deg, #ffa726, #fb8c00);
+$green-gradient: linear-gradient(60deg, #66bb6a, #43a047);
+$colors-secondary-disable: #dce2eb;
+$gray: #324058;
+$alert: #ec384d;
+$success: #76c239;
+$stroke-fields: #cbd0d9;
+$grid: #00ffef;
+$alert-hover: #f3455a;
+$green-hover: #83d640;
+$background: #f0f1f5;
+$colors-main-background: rgba(240, 241, 245, 0.9);
+$colors-secondary-stroke-fields: #d7dde6;
+$accent: #26c6da;
+
+:export {
+  blue: $blue;
+  lightBlue: $light-blue;
+}
