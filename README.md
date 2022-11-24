@@ -1,4 +1,4 @@
-# vue2-electron13-vuetify2-serialport-templete
+# Tap o Meter Desktop manager
 
 ## Project setup
 ```
