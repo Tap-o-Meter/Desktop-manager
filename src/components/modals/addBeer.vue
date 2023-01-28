@@ -19,7 +19,7 @@
                       <div
                         class="d-flex flex-column"
                         v-if="!image"
-                        style="text-align:center"
+                        style="text-align: center"
                       >
                         <v-icon :size="90" color="grey">
                           mdi-image-filter-hdr
@@ -31,7 +31,20 @@
                       </v-avatar>
                       <div
                         class="d-flex justify-center align-center"
-                        style="left:0;right:0;margin-left: auto;margin-right: auto;position: absolute; bottom: -20px; width: 40px; height: 40px;border-radius: 9px;box-shadow: 0 10px 20px -5px #9794f2;border: solid 1px #9794f2;background-color: #9794f2;"
+                        style="
+                          left: 0;
+                          right: 0;
+                          margin-left: auto;
+                          margin-right: auto;
+                          position: absolute;
+                          bottom: -20px;
+                          width: 40px;
+                          height: 40px;
+                          border-radius: 9px;
+                          box-shadow: 0 10px 20px -5px #9794f2;
+                          border: solid 1px #9794f2;
+                          background-color: #9794f2;
+                        "
                       >
                         <v-icon color="white">mdi-camera</v-icon>
                       </div>
@@ -47,6 +60,7 @@
                         label="Nombre*"
                         :rules="nameRules"
                         required
+                        v-on:blur="verifyName"
                         placeholder="Cerveza"
                       />
                     </v-col>
@@ -217,65 +231,88 @@
     <v-overlay z-index="2000" :value="loader">
       <v-progress-circular indeterminate size="64"></v-progress-circular>
     </v-overlay>
+    <v-dialog v-model="name_validation_error" width="500">
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2"> Advetencia </v-card-title>
+
+        <v-card-text>
+          Usted ya tiene una cerveza llamada con el nombre de <b>{{reapetedName}}</b>.
+          Agregar 2 cervezas con el mismo nombre puede ocacionar problemas en el
+          funcionamiento del sistema.
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="name_validation_error = false"> Aceptar </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
+import { mapState } from "vuex";
 import config from "../../config";
 import Api from "../../service/api";
 import ImageInput from "../form/ImageInput.vue";
-import { mapState } from "vuex";
 export default {
   name: "AddWorker",
   components: {
-    ImageInput: ImageInput
+    ImageInput: ImageInput,
   },
-  data() {
-    return {
-      color: "#1976D2",
-      mask: "!#XXXXXX",
-      menu: false,
-      beerColorOpt: true,
-      valid: true,
-      loader: false,
-      marker: true,
-      image: null,
-      addKeg: null,
-      name: "",
-      style: "",
-      brand: "",
-      abv: "",
-      ibu: "",
-      type: "",
-      description: "",
-      srm: "",
-      nameRules: [
-        v => !!v || "El nombre es requerido",
-        v => (v && v.length > 3) || "El nombre debe de ser mayor a 3 letras"
-      ],
-      styleRules: [v => !!v || "El Estilo es requerido"],
-      abvRules: [
-        v => !!v || "El ABV es requerido",
-        v => (v && !isNaN(parseInt(v))) || "El ABV debe de ser un número"
-      ],
-      ibuRules: [
-        v => !!v || "El IBU es requerido",
-        v => (v && !isNaN(parseInt(v))) || "El IBU debe de ser un número"
-      ],
-      typeRules: [v => !!v || "El tipo es requerido"],
-      srmRules: [v => !!v || "El SRM es requerido"],
-      typeList: ["Linea", "Temporada"]
-    };
-  },
+  data: () => ({
+    name_validation_error: false,
+    reapetedItem:null,
+    color: "#1976D2",
+    mask: "!#XXXXXX",
+    menu: false,
+    beerColorOpt: true,
+    valid: true,
+    loader: false,
+    marker: true,
+    image: null,
+    addKeg: null,
+    name: "",
+    style: "",
+    brand: "",
+    abv: "",
+    ibu: "",
+    type: "",
+    description: "",
+    srm: "",
+    nameRules: [
+      (v) => !!v || "El nombre es requerido",
+      (v) => (v && v.length > 3) || "El nombre debe de ser mayor a 3 letras",
+    ],
+    styleRules: [(v) => !!v || "El Estilo es requerido"],
+    abvRules: [
+      (v) => !!v || "El ABV es requerido",
+      (v) => (v && !isNaN(parseInt(v))) || "El ABV debe de ser un número",
+    ],
+    ibuRules: [
+      (v) => !!v || "El IBU es requerido",
+      (v) => (v && !isNaN(parseInt(v))) || "El IBU debe de ser un número",
+    ],
+    typeRules: [(v) => !!v || "El tipo es requerido"],
+    srmRules: [(v) => !!v || "El SRM es requerido"],
+    typeList: ["Linea", "Temporada"],
+  }),
   props: {
     open: Boolean,
     handleClose: Function,
     isEditing: Boolean,
-    beer: Object
+    beer: Object,
   },
   computed: {
     ...mapState("Session", ["BASE_URL"]),
-    srmList: function() {
+    ...mapState("Lines", ["beers"]),
+    srmList: function () {
       return config.srmList;
+    },
+    reapetedName(){
+
+      return this.reapetedItem ? this.reapetedItem.name : ""
     },
     swatchStyle() {
       const { color, menu } = this;
@@ -285,11 +322,11 @@ export default {
         height: "30px",
         width: "30px",
         borderRadius: menu ? "50%" : "4px",
-        transition: "border-radius 200ms ease-in-out"
+        transition: "border-radius 200ms ease-in-out",
       };
-    }
+    },
   },
-  beforeMount: function() {
+  beforeMount: function () {
     if (this.isEditing) {
       this.name = this.beer.name;
       this.style = this.beer.style;
@@ -301,7 +338,7 @@ export default {
       this.srm = this.srmList[this.beer.srm - 1].srm;
       if (this.beer.image) {
         this.image = {
-          imageURL: this.BASE_URL + "/getImage/" + this.beer.image
+          imageURL: this.BASE_URL + "/getImage/" + this.beer.image,
         };
       }
     }
@@ -310,7 +347,7 @@ export default {
     toggleMarker() {
       this.marker = !this.marker;
     },
-    filter: function(evt) {
+    filter: function (evt) {
       evt = evt ? evt : window.event;
       let expect = evt.target.value.toString() + evt.key.toString();
 
@@ -376,8 +413,19 @@ export default {
       }
       if (this.addKeg) this.handleClose(false, id);
       else this.handleClose(false);
-    }
-  }
+    },
+    verifyName(e) {
+      const text = e.target.value;
+      // var item = this.beers.filter(beer => beer.name.includes(text));
+      var items = this.beers.filter(
+        (beer) => beer.name.toLowerCase().replace(/\s/g, '') === text.toLowerCase().replace(/\s/g, '')
+      );
+      if (items.length > 0) {
+        this.reapetedItem = items[0];
+        this.name_validation_error=true
+      }
+    },
+  },
 };
 </script>
 <style lang="scss">

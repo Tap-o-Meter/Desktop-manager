@@ -17,7 +17,8 @@ export function connectPort(port, store) {
   const portToConnect = port === null ? store.state.CardReader.portName : port;
   if (portToConnect.length < 1) return; 
   lockerSerialPort = null;
-  lockerSerialPort = new SP(portToConnect, {
+  lockerSerialPort = new SP({
+    path: port,
     baudRate: 115200,
     autoOpen: false,
     flowControl: false,
@@ -27,7 +28,7 @@ export function connectPort(port, store) {
 
   lockerSerialPort.write("^");
 
-  parser = lockerSerialPort.pipe(new Readline({ delimiter: "\n" }));
+  parser = lockerSerialPort.pipe(new ReadlineParser({ delimiter: "\n" }));
   lockerSerialPort.open(function(err) {
     if (err) {
       console.log("we are fucked " + err);

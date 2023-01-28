@@ -67,25 +67,25 @@
                       :items="lines"
                       item-text="noLinea"
                       item-value="_id"
-                      label="# Linea"
+                      label=" Linea"
                       outlined
                     >
                       <template v-slot:selection="data">
                         {{ data.item.noLinea }}
                         <span
                           class="ma-0 font-weight-black overline"
-                          :class="getStatus(data.item) ? 'online' : 'free'"
-                          style="position:absolute; right:25px; top:21px"
-                          v-html="getStatus(data.item) ? 'En Uso' : 'Libre'"
+                          :class="getLineStatus(data.item) ? 'online' : 'free'"
+                          style="position:absolute; right:25px;"
+                          v-html="getLineStatus(data.item) ? 'En Uso' : 'Libre'"
                         ></span>
                       </template>
                       <template v-slot:item="data">
                         {{ data.item.noLinea }}
                         <span
                           class="ma-0 font-weight-black overline"
-                          :class="getStatus(data.item) ? 'online' : 'free'"
-                          style="position:absolute; right:25px; top:16px"
-                          v-html="getStatus(data.item) ? 'En Uso' : 'Libre'"
+                          :class="getLineStatus(data.item) ? 'online' : 'free'"
+                          style="position:absolute; right:25px;"
+                          v-html="getLineStatus(data.item) ? 'En Uso' : 'Libre'"
                         ></span>
                       </template>
                     </v-select>
@@ -125,7 +125,7 @@
                       placeholder="20"
                     />
                   </v-col>
-                  <v-col cols="6" class="pt-0 pb-0">
+                  <v-col cols="6" class="pt-0 pb-0" v-if="line ? getLineStatus2(line): false">
                     <p class="mb-0 header-5-alt light">El barril está:</p>
                     <v-radio-group
                       dense
@@ -195,10 +195,20 @@ export default {
     parseDate(date) {
       return config.parseHalfDate(date);
     },
+    getLineStatus(line){
+      return line.idKeg.length > 0;
+    },
+    getLineStatus2(line_id){
+      const line = this.getLineById(line_id);
+      return this.getLineStatus(line)
+    },
     toggleMarker() {
       this.marker = !this.marker;
       this.galToliter();
     },
+    getLineById(line_id){
+      return this.lines.find(line => line._id == line_id );
+    },  
     beerChange() {
       this.kegs = this.getBeerKegs(this.beer);
     },

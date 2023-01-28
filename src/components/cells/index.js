@@ -1,14 +1,16 @@
-import WorkerDashCell from "./workerDashCell";
-import BarrelDashCell from "./barrelDashCell";
+import KegCell from "./kegCell";
+import ChipStat from "./chipStat";
+import ChipStat2 from "./chipStat2";
 import BarrelCell from "./barrelCell";
 import WorkerCell from "./workerCell";
-import ChipStat from "./chipStat";
-import KegCell from "./kegCell";
+import WorkerDashCell from "./workerDashCell";
+import BarrelDashCell from "./barrelDashCell";
 export {
-  WorkerDashCell,
-  BarrelDashCell,
+  KegCell,
+  ChipStat,
+  ChipStat2,
   BarrelCell,
   WorkerCell,
-  ChipStat,
-  KegCell
+  WorkerDashCell,
+  BarrelDashCell,
 };

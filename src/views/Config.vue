@@ -7,13 +7,13 @@
     </div>
     <div class="config-wrapper d-flex flex-column align-center">
       <v-tabs v-model="tab" class="mt-2 px-8" background-color="transparent">
-        <v-tab class="header-4-alt thin ">
+        <v-tab class="header-4-alt thin">
           <v-icon class="mr-2">mdi-cog</v-icon> General
         </v-tab>
-        <v-tab class="header-4-alt thin ">
+        <v-tab class="header-4-alt thin">
           <v-icon class="mr-2">mdi-cast</v-icon> Menú de Taps
         </v-tab>
-        <v-tab class="header-4-alt thin ">
+        <v-tab class="header-4-alt thin">
           <v-icon class="mr-2">mdi-harddisk</v-icon> Almacenamiento
         </v-tab>
       </v-tabs>
@@ -21,14 +21,19 @@
       <v-tabs-items
         v-model="tab"
         class="transparent d-flex"
-        style="width:95%; flex:1"
+        style="width: 95%; flex: 1"
       >
         <v-tab-item background-color="white">
           <v-card class="mt-1 pr-5 pt-3 pl-5 mt-5" elevation="0">
             <span class="header-2-alt thin pl-3">Información</span>
             <v-container fluid>
-              <v-row style="overflow:visible; flex-wrap:nowrap">
-                <v-avatar tile size="160" style="overflow:visible" class="mr-5">
+              <v-row style="overflow: visible; flex-wrap: nowrap">
+                <v-avatar
+                  tile
+                  size="160"
+                  style="overflow: visible"
+                  class="mr-5"
+                >
                   <v-img v-if="!editInfo" contain :src="image.imageURL" />
 
                   <image-input v-else v-model="image" class="image-picker">
@@ -36,7 +41,7 @@
                       <div
                         class="d-flex flex-column"
                         v-if="!image"
-                        style="text-align:center"
+                        style="text-align: center"
                       >
                         <v-icon :size="90" color="grey">
                           mdi-image-filter-hdr
@@ -48,7 +53,20 @@
                       </v-avatar>
                       <div
                         class="d-flex justify-center align-center"
-                        style="left:0;right:0;margin-left: auto;margin-right: auto;position: absolute; bottom: -20px; width: 40px; height: 40px;border-radius: 9px;box-shadow: 0 10px 20px -5px #9794f2;border: solid 1px #9794f2;background-color: #9794f2;"
+                        style="
+                          left: 0;
+                          right: 0;
+                          margin-left: auto;
+                          margin-right: auto;
+                          position: absolute;
+                          bottom: -20px;
+                          width: 40px;
+                          height: 40px;
+                          border-radius: 9px;
+                          box-shadow: 0 10px 20px -5px #9794f2;
+                          border: solid 1px #9794f2;
+                          background-color: #9794f2;
+                        "
                       >
                         <v-icon color="white">mdi-camera</v-icon>
                       </div>
@@ -58,14 +76,14 @@
                 <v-scroll-y-transition :hide-on-leave="true">
                   <v-row v-show="!editInfo">
                     <v-col v-if="!editInfo" class="d-flex flex-column" cols="2">
-                      <span class="bold-names light ">Cervecería</span>
+                      <span class="bold-names light">Cervecería</span>
                       <span class="header-4-alt mate">
                         {{ placeInfo.name }}
                       </span>
                     </v-col>
 
                     <v-col v-if="!editInfo" class="d-flex flex-column" cols="2">
-                      <span class="bold-names light ">Sucursal</span>
+                      <span class="bold-names light">Sucursal</span>
                       <span
                         class="header-4-alt mate"
                         v-text="placeInfo.branch"
@@ -188,7 +206,7 @@
                       <img src="../assets/redCard.svg" class="card ml-5" />
 
                       <v-col class="d-flex flex-column">
-                        <span class="bold-names light mt-5 ">
+                        <span class="bold-names light mt-5">
                           # de Tarjeta de Emergencia
                         </span>
                         <span class="header-4-alt mate ml-3">
@@ -227,13 +245,13 @@
               </v-col>
               <v-col md="12" lg="6" xl="6">
                 <v-card class="mt-1 pr-5 pl-5 mt-5" elevation="0">
-                  <v-container fluid style="height:328px">
+                  <v-container fluid style="height: 328px">
                     <span class="header-2-alt thin">Servidor Externo</span>
-                    <v-row style="height:220px">
+                    <v-row style="height: 220px">
                       <!-- <v-img contain :src="BASE_URL + '/placeLogo'" /> -->
                       <img src="../assets/servers.svg" class="server ml-5" />
                       <v-col class="d-flex flex-column">
-                        <span class="bold-names light mt-5 ">
+                        <span class="bold-names light mt-5">
                           <v-icon size="18" v-text="'mdi-link-variant'" /> URL
                           del serveidor
                         </span>
@@ -286,7 +304,7 @@
               <p class="header-2-alt thin">Información</p>
               <v-row>
                 <v-col class="d-flex flex-column" cols="4">
-                  <span class="bold-names light ">
+                  <span class="bold-names light">
                     Tu dirección de enlace:
                     <v-icon size="16" class="pb-1 ml-1"
                       >mdi-alert-circle-outline</v-icon
@@ -324,6 +342,27 @@
                     </p>
                   </v-card> -->
                 </v-col>
+              </v-row>
+            </v-container>
+          </v-card>
+
+          <v-card class="mt-5 pr-5 pl-5" elevation="0">
+            <v-container fluid>
+              <p class="header-2-alt thin">Opciones</p>
+              <v-row>
+                <v-col class="d-flex flex-column ml-2" cols="2">
+                  <v-btn class="ma-1 opciones" color="grey" outlined small>
+                    Agregar Linea virtual
+                  </v-btn>
+                  <v-btn class="ma-1 opciones" color="grey" outlined small>
+                    Eliminar linea virtual
+                  </v-btn>
+                </v-col>
+                <v-col
+                  class="d-flex justify-center align-center"
+                  cols="4"
+                ></v-col>
+                <v-col class="d-flex align-end flex-column"></v-col>
               </v-row>
             </v-container>
           </v-card>
@@ -368,7 +407,7 @@
                 <v-col cols="2">
                   <v-scroll-x-transition>
                     <div v-show="entityList[3].value">
-                      <span class="header-4-alt light ">Periodos:</span>
+                      <span class="header-4-alt light">Periodos:</span>
                       <v-select
                         v-model="from"
                         class="mx-1 mt-5"
@@ -431,7 +470,7 @@
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import { parse } from "json2csv";
 import Api from "../service/api";
 import fs from "fs";
@@ -469,25 +508,27 @@ export default {
         { name: "lines", label: "Lineas", value: false },
         { name: "sale", label: "Ventas", value: false },
         { name: "stock", label: "Inventario", value: false },
-        { name: "workers", label: "Trabajadores", value: false }
+        { name: "workers", label: "Trabajadores", value: false },
       ],
       chartData: {
         labels: ["Disponible", "Ocupado"],
-        datasets: [{ backgroundColor: ["lightgray", "#2ecc71"], data: [] }]
-      }
+        datasets: [{ backgroundColor: ["lightgray", "#2ecc71"], data: [] }],
+      },
     };
   },
   computed: {
     ...mapState("Session", ["barrels", "workers", "placeInfo", "BASE_URL"]),
     ...mapState("Lines", ["beers", "kegs", "lines", "emergencyCard"]),
     ...mapState("Stock", ["stock"]),
+    ...mapGetters("Lines", ["getKegName"]),
+    ...mapGetters("Session", ["getWorker"]),
     config() {
       return config;
     },
     calculateMonths() {
       this.to = this.from + 1;
       return config.months.slice(this.from, 12);
-    }
+    },
   },
   methods: {
     closeAddEmergencyCard() {
@@ -523,7 +564,22 @@ export default {
             let response = await Api().get(
               "/sales/" + this.from + "/" + this.to
             );
+            if (response.data.data < 1) return;
             const sales = this.fixDate(response.data.data, ["date"]);
+            sales.forEach((sale) => {
+              const beer_name = this.getKegName(sale.kegId);
+
+              if (sale.workerId.length > 8) {
+                const { nombre, apellidos } = this.getWorker(sale.workerId);
+                sale.worker = `${nombre} ${apellidos}`;
+              } else sale.worker = `N/A`;
+
+              sale.name = beer_name;
+
+              delete sale.__v;
+              delete sale._id;
+              delete sale.workerId;
+            });
             const keys = Object.keys(sales);
             var csv;
             try {
@@ -536,7 +592,7 @@ export default {
             let response = await Api().get("/getKegs/");
             const kegs = this.fixDate(response.data.data, [
               "prepared",
-              "released"
+              "released",
             ]);
             const keys = Object.keys(kegs);
             const csv = parse(kegs, { keys });
@@ -567,7 +623,7 @@ export default {
       const logpath = home + "/Documents/Beer-control/";
       fs.existsSync(logpath) || fs.mkdirSync(logpath);
       const fileName = name + ".csv";
-      fs.writeFile(logpath + fileName, csv, function(err) {
+      fs.writeFile(logpath + fileName, csv, function (err) {
         if (err) console.log(err);
       });
     },
@@ -593,16 +649,16 @@ export default {
           branch,
           facebook,
           instagram,
-          twitter
+          twitter,
         });
         this.editInfo = false;
       } else {
         console.log(response.data);
         console.log("valiste");
       }
-    }
+    },
   },
-  mounted: async function() {
+  mounted: async function () {
     this.name = this.placeInfo.name;
     this.branch = this.placeInfo.branch;
     this.facebook = this.placeInfo.facebook;
@@ -630,7 +686,7 @@ export default {
       this.chartData.datasets[0].data.push(storage[1]);
       // this.$refs.skills_chart.update();
     }
-  }
+  },
 };
 </script>
 <style scoped lang="scss">
@@ -651,6 +707,11 @@ export default {
     height: 192px;
     width: 170px;
     overflow: visible;
+  }
+  .opciones {
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
   }
   .image-wrapper {
     display: flex;

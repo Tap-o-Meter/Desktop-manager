@@ -1,9 +1,9 @@
 <template>
   <div class="Line-details d-flex flex-column align-center no-scroll">
-    <v-container fluid class="pt-0 ">
+    <v-container fluid class="pt-0">
       <v-row
         class="black-gradient bottom-round elevation-5"
-        style="height:506px; overflow:hidden"
+        style="height: 506px; overflow: hidden"
       >
         <v-col cols="12" class="pb-0">
           <div
@@ -16,7 +16,7 @@
           </div>
         </v-col>
         <v-col cols="3" class="pl-5 d-flex flex-column">
-          <div class="d-flex ">
+          <div class="d-flex">
             <v-avatar color="lightgray" size="120" class="mb-5" tile>
               <v-img
                 contain
@@ -40,19 +40,19 @@
                 </p>
               </router-link>
               <div class="d-flex justify-space-between px-2">
-                <div class="d-flex flex-column align-center ">
+                <div class="d-flex flex-column align-center">
                   <span class="xs-subtitles bold white--text">Estilo</span>
                   <span class="header-5-alt thin white--text">
                     {{ beer.style }}
                   </span>
                 </div>
-                <div class="d-flex flex-column align-center ">
+                <div class="d-flex flex-column align-center">
                   <span class="xs-subtitles bold white--text">ABV</span>
                   <span class="header-5-alt thin white--text">
                     {{ keg.abv }}
                   </span>
                 </div>
-                <div class="d-flex flex-column align-center ">
+                <div class="d-flex flex-column align-center">
                   <span class="xs-subtitles bold white--text">IBU</span>
                   <span class="header-5-alt thin white--text">
                     {{ keg.ibu }}
@@ -64,13 +64,26 @@
           <v-row v-if="!line.virtual">
             <v-col>
               <h6 class="header-5-alt white--text">CANTIDAD</h6>
+              <p
+                class="header-fg-alt ultra-thin mb-5 white--text"
+                >
+                <!-- v-resize-text="{ minFontSize: '38px', maxFontSize: '100px' }" -->
+                {{ keg.available > 0 ? fixIt(keg.available) : 0 }}
+                <span
+                  class="header-4-alt light thin"
+                  style="margin-left: -13px"
+                >
+                  /{{ fixIt(keg.capacity) }}L
+                </span>
+              </p>
+              <h6 class="header-5-alt white--text">% disponible</h6>
               <div class="d-flex align-center mb-5">
                 <v-progress-linear
                   color="cyan darken-2"
                   rounded
                   :value="available"
                 />
-                <h6 class="header-6-alt white--text ml-2" style="width:35px">
+                <h6 class="header-6-alt white--text ml-2" style="width: 35px">
                   {{ this.available.toFixed(1) }}%
                 </h6>
               </div>
@@ -81,7 +94,7 @@
                   rounded
                   :value="merma"
                 />
-                <h6 class="header-6-alt white--text ml-2" style="width:35px">
+                <h6 class="header-6-alt white--text ml-2" style="width: 35px">
                   {{ this.merma.toFixed(1) }}%
                 </h6>
               </div>
@@ -113,18 +126,14 @@
           </v-btn>
         </v-col>
 
-        <v-col cols="9" style="height:422px">
+        <v-col cols="9" style="height: 422px">
           <v-btn-toggle
             v-model="toggle_exclusive"
             dark
             class="transparent border mr-3"
           >
-            <v-btn small outlined dark>
-              Ventas
-            </v-btn>
-            <v-btn small outlined dark>
-              Información
-            </v-btn>
+            <v-btn small outlined dark> Ventas </v-btn>
+            <v-btn small outlined dark> Información </v-btn>
           </v-btn-toggle>
           <v-slide-x-transition>
             <BarChart
@@ -133,7 +142,7 @@
               :data="chartData"
               :suffix="''"
               class="mb-3"
-              style="height:90%"
+              style="height: 90%"
             />
             <div v-else class="white--text">
               <v-container fluid>
@@ -141,7 +150,7 @@
                   <v-row class="pb-0">
                     <v-col class="pb-0">
                       <v-row class="pa-0">
-                        <v-col class="d-flex flex-column align-start ">
+                        <v-col class="d-flex flex-column align-start">
                           <span class="header-5-alt bold white--text">
                             Capacidad
                           </span>
@@ -149,7 +158,7 @@
                             {{ keg.capacity }} L
                           </span>
                         </v-col>
-                        <v-col class="d-flex flex-column align-start ">
+                        <v-col class="d-flex flex-column align-start">
                           <span class="header-5-alt bold white--text">
                             Disponible
                           </span>
@@ -157,7 +166,7 @@
                             {{ keg.available }} L
                           </span>
                         </v-col>
-                        <v-col class="d-flex flex-column align-start ">
+                        <v-col class="d-flex flex-column align-start">
                           <span class="header-5-alt bold white--text">SRM</span>
                           <span class="header-4-alt thin white--text ml-1">
                             {{ beer.srm > 100 ? "NA" : beer.srm }}
@@ -197,28 +206,32 @@
               <v-icon color="#43a047" size="27">$salesRecord</v-icon>
               <span class="header-3-alt thin ml-1"> Historial de ventas</span>
               <v-spacer />
+              <v-btn
+                text
+                color="#8e44ad"
+                class="header-5-alt"
+                :to="{ name: 'list-details', params: { type: 0, data: sales } }"
+              >
+                Ver más <v-icon>mdi-chevron-right</v-icon>
+              </v-btn>
             </v-card-title>
             <v-data-table
               :headers="salesHeaders"
-              :items="sales"
+              :items="fixSalesTable(sales)"
               class="elevation-0 d-flex flex-column"
-              style="height:347px;"
+              style="height: 347px"
               :items-per-page="5"
             >
               <template v-slot:item="{ item }">
+         
                 <tr :class="getClass(item.concept, item.workerId)">
                   <td
                     v-for="key in Object.keys(item)"
                     :key="key"
-                    :class="key !== 'workerId' ? 'right' : ''"
-                    v-if="item.workerId.length > 4"
+                    :class="key"
+                    v-if="key == 'workerId' && item.workerId.length > 4"
                   >
-                    <v-avatar
-                      v-if="key === 'workerId'"
-                      size="40"
-                      color="grey"
-                      class="mr-1"
-                    >
+                    <v-avatar size="40" color="grey" class="mr-1">
                       <v-img
                         :src="
                           BASE_URL + '/getImage/' + worker(item.workerId).image
@@ -230,16 +243,12 @@
                       </span>
                     </v-avatar>
                     {{
-                      key !== "workerId"
-                        ? item[key]
-                        : worker(item.workerId).nombre +
-                          " " +
-                          worker(item.workerId).apellidos
+                      worker(item.workerId).nombre +
+                      " " +
+                      worker(item.workerId).apellidos
                     }}
                   </td>
-                  <td v-else>
-                    {{ key !== "workerId" ? item[key] : "Cortesía reclamada" }}
-                  </td>
+                  <td :class="key" v-else-if="key !== 'date'" v-html="renderSellCell(item, key)" />
                 </tr>
               </template>
               <template v-slot:item.image="{ item }">
@@ -267,7 +276,7 @@
               :headers="historyHeaders"
               :items="getLineHistory(line.noLinea)"
               class="elevation-0 d-flex flex-column"
-              style="height:347px;"
+              style="height: 347px"
               :items-per-page="5"
             >
               <template v-slot:item.beerId="{ item }">
@@ -343,7 +352,7 @@ export default {
         "Vazo 16oz",
         "Growler 32oz",
         "Growler 64oz",
-        "Growler 128oz"
+        "Growler 128oz",
       ],
       chartData: [],
       salesHeaders: [
@@ -351,16 +360,22 @@ export default {
           text: "TRABAJADOR",
           value: "workerId",
           sortable: false,
-          align: "start"
+          align: "start",
         },
         { text: "VENTA", value: "concept", width: "45", sortable: false },
-        { text: "CANTIDAD", value: "carbs", width: "45", sortable: false }
+        {
+          text: "CANTIDAD",
+          value: "qty",
+          width: "45",
+          sortable: false,
+          align: "end",
+        },
       ],
       historyHeaders: [
         { text: "Nombre", value: "beerId", align: "start", sortable: false },
         { text: "Estilo", value: "style", sortable: false },
-        { text: "Fecha", value: "lastLine.date", width: "45" }
-      ]
+        { text: "Fecha", value: "lastLine.date", width: "45" },
+      ],
     };
   },
   computed: {
@@ -369,7 +384,7 @@ export default {
       "getStatus",
       "getLine",
       "getBeer",
-      "getLineHistory"
+      "getLineHistory",
     ]),
     ...mapState("Session", ["BASE_URL"]),
     ...mapGetters("Session", ["getWorker"]),
@@ -393,16 +408,20 @@ export default {
 
     merma() {
       return (this.keg.merma / this.keg.capacity) * 100;
-    }
+    },
   },
-  beforeMount: async function() {
+  beforeMount: async function () {
     this.line = this.getLine(this.$route.params.id);
     this.badLevels = this.keg.available < 0;
     try {
       this.loader = true;
       let response = await Api().post("/keg_sales", { kegId: this.line.idKeg });
       this.sales = JSON.parse(
-        JSON.stringify(response.data.data, ["workerId", "concept", "qty"], 4)
+        JSON.stringify(
+          response.data.data,
+          ["_id","workerId", "concept", "qty", "date"],
+          4
+        )
       );
       this.chartData = this.getBeerSalesByConcept(this.sales);
       this.loader = false;
@@ -411,18 +430,47 @@ export default {
     }
   },
   methods: {
-    getClass(concept, workerId) {
-      if (workerId.length > 4) {
-        if (concept == "MERMA") return "merma";
-      } else return "claimed";
+    fixIt(n) {
+      return n - Math.floor(n) !== 0 ? n.toFixed(1) : n;
     },
-
+    getClass(concept, workerId) {
+      if (workerId.length < 4) return "claimed";
+      if (concept == "MERMA") return "merma";
+      else ""
+    },
+    fixSalesTable(table){
+      if(table.length < 1) return []
+      var new_table = table.map( element => {
+        const {workerId, concept, qty, date} = element;
+        return {workerId, concept, qty, date} 
+      })
+      return new_table
+    },  
+    parseQty(qty) {
+      var formatedQty;
+      if (qty.charAt(0) == "." || qty.charAt(0) == ".") {
+        formatedQty = parseInt(qty.slice(qty.indexOf(".") + 1)).toString();
+        formatedQty += " mL";
+      } else {
+        formatedQty = qty + " L";
+      }
+      return formatedQty;
+    },
     worker(workerId) {
       return this.getWorker(workerId);
     },
 
     srmList(srmIndex) {
       return config.getSrm(srmIndex);
+    },
+    renderSellCell(item, key) {
+      if (key == "workerId") {
+        if (item.workerId.length < 4) return "Cortesía reclamada";
+        const { nombre, apellidos } = this.worker(item.workerId);
+        return `${nombre} ${apellidos}`;
+      } else if (key == "qty") return this.parseQty(item.qty);
+      else if (key == "date") return;
+      else return item[key];
     },
 
     getBeerSalesByConcept(sales) {
@@ -435,10 +483,10 @@ export default {
         0, //pint16oz
         0, //growler32oz
         0, //growler64oz
-        0 //growler128oz
+        0, //growler128oz
       ];
-      console.log(sales);
-      sales.forEach(sale => {
+      // console.log(sales);
+      sales.forEach((sale) => {
         if (sale.kegId === kegId) {
           if (sale.concept == "PINT") {
             if (sale.qty === ".236") categorySales[2]++;
@@ -476,8 +524,8 @@ export default {
       } catch (e) {
         this.loader = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style scoped lang="scss">
@@ -505,32 +553,7 @@ export default {
   a {
     text-decoration: none;
   }
-  .merma {
-    background-color: rgba(255, 70, 75, 0.8);
-    border-radius: 5px;
-  }
-  .merma td:first-child {
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-  }
-  .merma td:last-child {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-  }
-
-  .merma:hover {
-    background: rgba(255, 70, 75, 0.6) !important;
-  }
-
-  .claimed {
-    background-color: green;
-    border-radius: 5px;
-  }
-
-  .claimed:hover {
-    background: GreenYellow !important;
-  }
-
+  
   .titleWrapper {
     z-index: 1;
     position: sticky;
@@ -552,11 +575,60 @@ export default {
   .v-item-group {
     float: right;
   }
-
+  
   .right {
     text-align: right;
     width: 45px;
   }
+}
+.merma {
+  background-color: rgba(255, 70, 75, 0.8) !important;
+}
+.merma td:first-child {
+  // border-top-left-radius: 5px;
+  // border-bottom-left-radius: 5px;
+}
+
+.merma td {
+  color: azure;
+  // border-top-left-radius: 5px;
+  // border-bottom-left-radius: 5px;
+}
+
+td:last-child {
+  text-align: end;
+  // border-top-right-radius: 5px;
+  // border-bottom-right-radius: 5px;
+}
+.qty {
+  text-align: end;
+}
+
+.merma:hover {
+  background: rgba(255, 70, 75, 0.7) !important;
+}
+
+.concept {
+  font-size: 11px !important;
+  font-weight: bold;
+  text-align: end;
+}
+
+.claimed {
+  background-color: green;
+}
+
+.claimed:hover {
+  background: rgba(0, 128, 0, 0.7) !important;
+}
+
+.claimed td {
+  color: azure;
+  // border-top-left-radius: 5px;
+  // border-bottom-left-radius: 5px;
+}
+.date {
+  display: none;
 }
 </style>
 <style lang="scss">

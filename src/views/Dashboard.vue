@@ -18,7 +18,7 @@
         <v-row>
           <v-col cols="8">
             <v-card class="d-flex flex-column" min-height="420" elevation="0">
-              <v-card-title class=" d-flex justify-space-between pb-1">
+              <v-card-title class="d-flex justify-space-between pb-1">
                 <span class="header-3-alt ultra-thin">
                   <v-icon size="32" class="pb-2"> $beerTapOutline </v-icon>
                   Lineas
@@ -61,7 +61,7 @@
                           <v-col cols="7" offset="5" class="text-right pt-0">
                             <h3 class="header-3-alt thin">Merma</h3>
                             <p class="header-fg-alt ultra-thin red--text">
-                              {{ keg.merma }}
+                              {{ keg.merma.toFixed(1) }}
                             </p>
                           </v-col>
                           <v-col
@@ -171,7 +171,7 @@
               <v-card-text
                 v-if="topWorkers[0]"
                 class="d-flex flex-column align-center px-0 no-scroll"
-                style="overflow: scroll; max-height:355px; overflow-x: hidden;"
+                style="overflow: scroll; max-height: 355px; overflow-x: hidden"
               >
                 <v-avatar color="blue" size="130" style="min-height: 130px">
                   <v-img
@@ -181,7 +181,7 @@
                   <span class="white--text header-fg-alt" v-else>
                     {{
                       topWorkers[0].nombre.charAt(0) +
-                        topWorkers[0].apellidos.charAt(0)
+                      topWorkers[0].apellidos.charAt(0)
                     }}
                   </span>
                 </v-avatar>
@@ -189,9 +189,9 @@
                   class="header-4-alt light mt-2 thin"
                   v-html="
                     '<b>1.-</b>' +
-                      topWorkers[0].nombre +
-                      ' ' +
-                      topWorkers[0].apellidos
+                    topWorkers[0].nombre +
+                    ' ' +
+                    topWorkers[0].apellidos
                   "
                 />
 
@@ -231,7 +231,7 @@
                         icon
                         :to="{
                           name: 'worker-details',
-                          params: { worker: worker }
+                          params: { worker: worker },
                         }"
                       >
                         <v-icon color="grey lighten-1" v-text="'mdi-magnify'" />
@@ -247,7 +247,7 @@
 
       <div class="workersWrapper flex-column align-start justify-start mt-5">
         <span class="ml-7 header-3-alt ultra-thin">Trabajadores</span>
-        <div class=" workersList d-flex pt-1 pb-3 align-end">
+        <div class="workersList d-flex pt-1 pb-3 align-end">
           <WorkerCell
             v-for="worker in formatWorkers"
             :worker="worker"
@@ -264,6 +264,7 @@
 </template>
 <script>
 import Api from "../service/api";
+import ResizeText from "vue-resize-text";
 import { mapState, mapGetters } from "vuex";
 import { socket, connectPort } from "../api";
 import { WorkerCell, BarrelDashCell, ChipStat } from "../components/cells";
@@ -276,8 +277,11 @@ export default {
     cards: [],
     topWorkers: [],
     totalSold: 0,
-    loader: false
+    loader: false,
   }),
+  directives: {
+    ResizeText,
+  },
   methods: {
     setSelected(key) {
       this.indexKeg = key;
@@ -285,7 +289,7 @@ export default {
     beer(keg) {
       return this.getBeer(keg.beerId);
     },
-    fixIt: n => (n - Math.floor(n) !== 0 ? n.toFixed(1) : n)
+    fixIt: (n) => (n - Math.floor(n) !== 0 ? n.toFixed(1) : n),
   },
   computed: {
     ...mapState("Session", ["workers", "BASE_URL"]),
@@ -320,7 +324,7 @@ export default {
         data: "12",
         message: "2 aucentes",
         miniIcon: "mdi-account-off",
-        href: "workers"
+        href: "workers",
       });
       var criticalKegs = this.getCriticalKegs;
       var criticalStock = this.getCriticalStock;
@@ -334,7 +338,7 @@ export default {
             ? this.getBeer(criticalKegs[0].beerId).name
             : "",
         miniIcon: criticalKegs.length > 0 ? "mdi-alert" : "",
-        href: "barrels"
+        href: "barrels",
       });
       cards.push({
         icon: "$beerTap",
@@ -343,7 +347,7 @@ export default {
         data: this.totalSold + "L",
         message: "",
         miniIcon: "",
-        href: "sales"
+        href: "sales",
       });
       cards.push({
         icon: "mdi-clipboard-list",
@@ -352,12 +356,12 @@ export default {
         data: criticalStock.length,
         message: criticalStock.length > 0 ? criticalStock[0].name : "",
         miniIcon: criticalStock.length > 0 ? "mdi-alert" : "",
-        href: "inventario"
+        href: "inventario",
       });
       return cards;
-    }
+    },
   },
-  beforeMount: async function() {
+  beforeMount: async function () {
     this.loader = true;
     try {
       let response = await Api().get("/getSummary");
@@ -368,13 +372,13 @@ export default {
         const { stock, workers, placeInfo, sales } = data;
 
         const linesData = { data: kegs, lines, beers, emergencyCard };
-        console.warn(linesData);
+        // console.warn(linesData);
         this.$store.dispatch("Lines/setLines", linesData);
         this.$store.dispatch("Session/setWorkers", workers);
         this.$store.dispatch("Sales/setSales", sales);
         this.$store.dispatch("Stock/setStock", stock);
         this.$store.dispatch("Session/setPlaceInfo", placeInfo);
-        this.indexKeg = this.lines.findIndex(line => line.idKeg.length > 0);
+        this.indexKeg = this.lines.findIndex((line) => line.idKeg.length > 0);
         this.loader = false;
       }
     } catch (e) {
@@ -391,7 +395,7 @@ export default {
   },
 
   watch: {
-    sales: function(newVal, oldVal) {
+    sales: function (newVal, oldVal) {
       if (newVal !== null) {
         const workersSales = [];
         this.getSalesByWorker(this.workers).forEach((item, i) => {
@@ -400,8 +404,8 @@ export default {
         workersSales.sort((a, b) => b.qty - a.qty);
         this.topWorkers = workersSales;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style scoped lang="scss">

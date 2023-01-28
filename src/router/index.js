@@ -2,17 +2,18 @@ import Vue from "vue";
 import Router from "vue-router";
 import {
   Login,
-  Dashboard,
+  Sales,
+  Config,
   Barrels,
   Workers,
-  WorkerDetails,
-  Sales,
+  Dashboard,
   Inventario,
-  Config,
-  LineDetails,
   KegDetails,
   VIPClients,
-  ClientDetails
+  LineDetails,
+  ExpandedList,
+  WorkerDetails,
+  ClientDetails,
 } from "../views";
 
 Vue.use(Router);
@@ -62,6 +63,12 @@ export default new Router({
       path: "/sales",
       name: "sales",
       component: Sales
+    },
+    {
+      path: "/list-details",
+      name: "list-details",
+      component: ExpandedList,
+      params: true
     },
     {
       path: "inventario",

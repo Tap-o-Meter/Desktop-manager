@@ -58,6 +58,7 @@ export default {
       this.handleClose();
     },
     connect() {
+      console.warn("Conectando a puerto: " + this.selectedPort);
       if (this.$refs.form.validate()) {
         connectPort(this.selectedPort, this.$store);
       }

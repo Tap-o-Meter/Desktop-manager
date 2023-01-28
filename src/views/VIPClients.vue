@@ -134,7 +134,7 @@ export default {
     applyFilter(filtro) {
       const levels = [""];
       return this.Clients.filter(client => {
-        console.warn(config.cardLevels[client.level - 1] === filtro);
+        // console.warn(config.cardLevels[client.level - 1] === filtro);
         return filtro === "Todos" || filtro === ""
           ? true
           : config.cardLevels[client.level - 1] === filtro;

@@ -19,7 +19,7 @@ const mutations = {
     return (state.loggedIn = user);
   },
   SET_WORKERS(state, response) {
-    console.warn(response);
+    // console.warn(response);
     return (state.workers = response);
   },
   UPDATE_WORKER(state, workerUpdated) {

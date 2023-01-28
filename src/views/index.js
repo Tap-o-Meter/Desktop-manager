@@ -1,26 +1,28 @@
 import Login from "./Login";
-import Dashboard from "./Dashboard";
+import Sales from "./Sales";
+import Config from "./Config";
 import Barrels from "./barrels";
 import Workers from "./Workers";
-import WorkerDetails from "./WorkerDetails";
-import Sales from "./Sales";
+import Dashboard from "./Dashboard";
 import Inventario from "./Inventario";
-import Config from "./Config";
-import LineDetails from "./LineDetails";
 import KegDetails from "./kegDetails";
 import VIPClients from "./VIPClients";
+import LineDetails from "./LineDetails";
+import WorkerDetails from "./WorkerDetails";
 import ClientDetails from "./ClientDetails";
+import ExpandedList from "./ExpandedList";
 export {
   Login,
-  Dashboard,
+  Sales,
+  Config,
   Barrels,
   Workers,
-  WorkerDetails,
-  Sales,
-  Inventario,
-  Config,
-  LineDetails,
-  KegDetails,
+  Dashboard,
   VIPClients,
-  ClientDetails
+  Inventario,
+  KegDetails,
+  LineDetails,
+  ExpandedList,
+  WorkerDetails,
+  ClientDetails,
 };

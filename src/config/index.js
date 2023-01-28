@@ -25,6 +25,33 @@ export default {
     viernes: 5,
     sábado: 6
   },
+  keg_sizes:[
+    {
+      name:"Cornelius",
+      qty_gal:5,
+      qty_lts:18
+    },
+    {
+      name:"Torpedo",
+      qty_gal:5.16,
+      qty_lts:20
+    },
+    {
+      name:"Pony",
+      qty_gal:7.75,
+      qty_lts:30
+    },
+    {
+      name:"European Keg",
+      qty_gal:13.2,
+      qty_lts:50
+    },
+    {
+      name:"Half barrel",
+      qty_gal:15.5,
+      qty_lts:60
+    }
+  ],
   months: [
     { name: "Enero", value: 0 },
     { name: "Febrero", value: 1 },
