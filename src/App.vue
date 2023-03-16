@@ -72,6 +72,7 @@ export default {
   computed: {
     ...mapGetters("Session", ["getWorkerByCardId"]),
     ...mapState("Session", ["connectionStatus"])
+    //git checkout -t <remote_name>/<branch_name>
   },
   methods: {
     showQuickActions(msg) {
