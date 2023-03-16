@@ -160,7 +160,6 @@
 </template>
 <script>
 import Api from "../../service/api";
-import axios from "axios";
 import config from "../../config";
 import { mapState, mapGetters } from "vuex";
 export default {

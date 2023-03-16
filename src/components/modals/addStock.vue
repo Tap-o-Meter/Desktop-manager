@@ -128,7 +128,7 @@
   </div>
 </template>
 <script>
-import Api from "../../service/api";
+import Api, {multipartHeaders} from "../../service/api";
 import axios from "axios";
 import ImageInput from "../form/ImageInput.vue";
 export default {
@@ -197,7 +197,7 @@ export default {
           formData.append("volume", volume);
           formData.append("lead_time", lead_time);
           formData.append("min_product", min_product);
-          let response = await Api().post("/addStock", formData);
+          let response = await Api().post("/addStock", formData, multipartHeaders);
           this.loader = false;
           if (response.data.confirmation === "success") {
             this.$store.dispatch("Stock/addStock", response.data.data);

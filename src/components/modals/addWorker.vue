@@ -198,7 +198,7 @@
   </div>
 </template>
 <script>
-import Api from "../../service/api";
+import Api, {multipartHeaders} from "../../service/api";
 import { mapState } from "vuex";
 import { suscribe, unsuscribe } from "../../api/index.js";
 import ConnectDevice from "./connectDevice";
@@ -346,7 +346,7 @@ export default {
           formData.append("nombre", nombre);
           formData.append("apellidos", apellidos);
           formData.append("cardId", cardId);
-          let response = await Api().post(url, formData);
+          let response = await Api().post(url, formData, multipartHeaders);
           this.loader = false;
           if (response.data.confirmation === "success") {
             console.log(response.data.data);

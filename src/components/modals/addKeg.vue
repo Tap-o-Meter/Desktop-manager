@@ -287,7 +287,7 @@ export default {
             qty: cant,
             prepared: date,
             released: date2,
-            capacity: marker ? capacity : this.galToliter(),
+            capacity: marker ? capacity.qty_lts : this.galToliter(),
             beerId,
             abv,
             ibu,

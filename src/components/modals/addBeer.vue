@@ -236,16 +236,19 @@
         <v-card-title class="text-h5 grey lighten-2"> Advetencia </v-card-title>
 
         <v-card-text>
-          Usted ya tiene una cerveza llamada con el nombre de <b>{{reapetedName}}</b>.
-          Agregar 2 cervezas con el mismo nombre puede ocacionar problemas en el
-          funcionamiento del sistema.
+          Usted ya tiene una cerveza llamada con el nombre de
+          <b>{{ reapetedName }}</b
+          >. Agregar 2 cervezas con el mismo nombre puede ocacionar problemas en
+          el funcionamiento del sistema.
         </v-card-text>
 
         <v-divider></v-divider>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="name_validation_error = false"> Aceptar </v-btn>
+          <v-btn color="primary" text @click="name_validation_error = false">
+            Aceptar
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -254,7 +257,7 @@
 <script>
 import { mapState } from "vuex";
 import config from "../../config";
-import Api from "../../service/api";
+import Api, { multipartHeaders } from "../../service/api";
 import ImageInput from "../form/ImageInput.vue";
 export default {
   name: "AddWorker",
@@ -263,7 +266,7 @@ export default {
   },
   data: () => ({
     name_validation_error: false,
-    reapetedItem:null,
+    reapetedItem: null,
     color: "#1976D2",
     mask: "!#XXXXXX",
     menu: false,
@@ -310,9 +313,8 @@ export default {
     srmList: function () {
       return config.srmList;
     },
-    reapetedName(){
-
-      return this.reapetedItem ? this.reapetedItem.name : ""
+    reapetedName() {
+      return this.reapetedItem ? this.reapetedItem.name : "";
     },
     swatchStyle() {
       const { color, menu } = this;
@@ -382,7 +384,7 @@ export default {
           formData.append("type", this.type);
           formData.append("description", this.description);
           const path = this.isEditing ? "/editBeer" : "/addBeer";
-          let response = await Api().post(path, formData);
+          let response = await Api().post(path, formData, multipartHeaders);
           this.loader = false;
           if (response.data.confirmation === "success") {
             const action = this.isEditing ? "Lines/editBeer" : "Lines/addBeer";
@@ -393,6 +395,7 @@ export default {
             console.log("valiste");
           }
         } catch (e) {
+          console.warn(e);
           this.loader = false;
         }
       }
@@ -418,11 +421,13 @@ export default {
       const text = e.target.value;
       // var item = this.beers.filter(beer => beer.name.includes(text));
       var items = this.beers.filter(
-        (beer) => beer.name.toLowerCase().replace(/\s/g, '') === text.toLowerCase().replace(/\s/g, '')
+        (beer) =>
+          beer.name.toLowerCase().replace(/\s/g, "") ===
+          text.toLowerCase().replace(/\s/g, "")
       );
       if (items.length > 0) {
         this.reapetedItem = items[0];
-        this.name_validation_error=true
+        this.name_validation_error = true;
       }
     },
   },

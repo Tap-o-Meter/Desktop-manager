@@ -472,7 +472,7 @@
 <script>
 import { mapState, mapGetters } from "vuex";
 import { parse } from "json2csv";
-import Api from "../service/api";
+import Api, {multipartHeaders} from "../service/api";
 import fs from "fs";
 import path from "path";
 import config from "../config";
@@ -641,7 +641,7 @@ export default {
       formData.append("facebook", facebook);
       formData.append("instagram", instagram);
       formData.append("twitter", twitter);
-      let response = await Api().post("/editPlaceInfo", formData);
+      let response = await Api().post("/editPlaceInfo", formData, multipartHeaders);
       this.loader = false;
       if (response.data.confirmation) {
         this.$store.dispatch("Session/setPlaceInfo", {
