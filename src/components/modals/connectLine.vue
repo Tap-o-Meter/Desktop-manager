@@ -44,15 +44,6 @@
                       </template>
                       <template v-slot:item="data">
                         <span v-text="parseDate(data.item.released)" />
-                        <v-spacer />
-                        <span
-                          v-text="data.item.status"
-                          :class="
-                            data.item.status == 'FULL'
-                              ? 'green--text'
-                              : 'red--text'
-                          "
-                        />
                       </template>
                     </v-select>
                   </v-col>
@@ -67,25 +58,25 @@
                       :items="lines"
                       item-text="noLinea"
                       item-value="_id"
-                      label=" Linea"
+                      label="# Linea"
                       outlined
                     >
                       <template v-slot:selection="data">
                         {{ data.item.noLinea }}
                         <span
                           class="ma-0 font-weight-black overline"
-                          :class="getLineStatus(data.item) ? 'online' : 'free'"
-                          style="position:absolute; right:25px;"
-                          v-html="getLineStatus(data.item) ? 'En Uso' : 'Libre'"
+                          :class="getStatus(data.item) ? 'online' : 'free'"
+                          style="position:absolute; right:25px; top:21px"
+                          v-html="getStatus(data.item) ? 'En Uso' : 'Libre'"
                         ></span>
                       </template>
                       <template v-slot:item="data">
                         {{ data.item.noLinea }}
                         <span
                           class="ma-0 font-weight-black overline"
-                          :class="getLineStatus(data.item) ? 'online' : 'free'"
-                          style="position:absolute; right:25px;"
-                          v-html="getLineStatus(data.item) ? 'En Uso' : 'Libre'"
+                          :class="getStatus(data.item) ? 'online' : 'free'"
+                          style="position:absolute; right:25px; top:16px"
+                          v-html="getStatus(data.item) ? 'En Uso' : 'Libre'"
                         ></span>
                       </template>
                     </v-select>
@@ -125,7 +116,7 @@
                       placeholder="20"
                     />
                   </v-col>
-                  <v-col cols="6" class="pt-0 pb-0" v-if="line ? getLineStatus2(line): false">
+                  <v-col cols="6" class="pt-0 pb-0">
                     <p class="mb-0 header-5-alt light">El barril está:</p>
                     <v-radio-group
                       dense
@@ -160,6 +151,7 @@
 </template>
 <script>
 import Api from "../../service/api";
+import axios from "axios";
 import config from "../../config";
 import { mapState, mapGetters } from "vuex";
 export default {
@@ -194,20 +186,10 @@ export default {
     parseDate(date) {
       return config.parseHalfDate(date);
     },
-    getLineStatus(line){
-      return line.idKeg.length > 0;
-    },
-    getLineStatus2(line_id){
-      const line = this.getLineById(line_id);
-      return this.getLineStatus(line)
-    },
     toggleMarker() {
       this.marker = !this.marker;
       this.galToliter();
     },
-    getLineById(line_id){
-      return this.lines.find(line => line._id == line_id );
-    },  
     beerChange() {
       this.kegs = this.getBeerKegs(this.beer);
     },
@@ -225,25 +207,21 @@ export default {
       if (this.$refs.form.validate()) {
         const { keg, line, status } = this;
         this.loader = true;
-        try {
-          let response = await Api().post("/connect-line", {
-            id: line,
-            newStatus: status,
-            newKeg: keg._id
+        let response = await Api().post("/connect-line", {
+          id: line,
+          newStatus: status,
+          newKeg: keg._id
+        });
+        this.loader = false;
+        if (response.data.confirmation === "success") {
+          this.$store.dispatch("Lines/replaceLine", {
+            data: response.data.data,
+            newStatus: status
           });
-          this.loader = false;
-          if (response.data.confirmation === "success") {
-            this.$store.dispatch("Lines/replaceLine", {
-              data: response.data.data,
-              newStatus: status
-            });
-            this.closeModal();
-          } else {
-            console.log(response.data);
-            console.log("valiste");
-          }
-        } catch (e) {
-          this.loader = false;
+          this.closeModal();
+        } else {
+          console.log(response.data);
+          console.log("valiste");
         }
       }
     },

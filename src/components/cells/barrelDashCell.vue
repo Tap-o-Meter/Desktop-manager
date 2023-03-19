@@ -4,13 +4,8 @@
     @click="clickHandler($vnode.key)"
     :class="selected ? 'selected mt-4 mb-4' : ''"
   >
-    <div class=""></div>
-    <div class=" d-flex pa-3 kegData light">
-      {{ line.noLinea }} .-
-      <v-avatar v-if="beer.image !== null" color="lightgray" size="50" tile>
-        <v-img contain :src="BASE_URL + '/getImage/' + beer.image" />
-      </v-avatar>
-      <v-icon v-else size="50" class="mt-3">mdi-glass-mug-variant</v-icon>
+    <div class=" d-flex pa-3 kegData">
+      <v-icon size="50" class="mt-3">mdi-glass-mug-variant</v-icon>
       <div class="keg-info d-flex flex-column pt-3 ml-3">
         <span class="xs-subtitles">Nombe</span>
         <span class="header-5-alt">{{ beer.name }}</span>
@@ -29,7 +24,7 @@
   </div>
 </template>
 <script>
-import { mapGetters, mapState } from "vuex";
+import { mapGetters } from "vuex";
 export default {
   name: "BarrelDashCell",
   props: {
@@ -38,7 +33,6 @@ export default {
     selected: Boolean
   },
   computed: {
-    ...mapState("Session", ["BASE_URL"]),
     ...mapGetters("Lines", ["getBeer", "getKeg"]),
     beer() {
       return this.getBeer(this.keg.beerId);

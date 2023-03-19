@@ -55,7 +55,7 @@
     </v-container>
 
     <v-divider class="my-2" />
-    <v-container v-if="!line.virtual" class="mt-4 " fluid>
+    <v-container class="mt-4 " fluid>
       <v-row>
         <v-col
           cols="5"
@@ -75,7 +75,7 @@
                 class="header-fg-alt ultra-thin mb-1 accented"
                 v-resize-text="{ minFontSize: '38px', maxFontSize: '100px' }"
               >
-                {{ keg.available > 0 ? fixIt(keg.available) : 0 }}
+                {{ fixIt(keg.available) }}
                 <span class="header-4-alt light thin" style="margin-left:-13px">
                   /{{ fixIt(keg.capacity) }}L
                 </span>
@@ -114,10 +114,6 @@
         </v-col>
       </v-row>
     </v-container>
-    <div v-else class="no-apply mb-3">
-      <!-- <v-row class="d-flex flex-column align-center justify-center"> -->
-      <p class="header-3-alt">¡No aplica!</p>
-    </div>
   </v-card>
 </template>
 <script>
@@ -196,13 +192,6 @@ export default {
       right: 0;
       top: 0;
     }
-  }
-  .no-apply {
-    display: flex;
-    width: 100%;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
   }
 }
 .disabled {

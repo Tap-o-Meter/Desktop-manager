@@ -7,12 +7,11 @@ import StockDetails from "./stockDetails";
 import ConnectDevice from "./connectDevice";
 import MultipleOptions from "./multipleOptions";
 import SubtractInventory from "./subtractInventory";
-import SetSchedule from "./setSchedule";
 import ConnectLine from "./connectLine";
 import KegDetails from "./kegDetails";
-import AddEmergencyCard from "./addEmergencyCard";
-import AddVIPClient from "./addVIPClient";
-import GettingHost from "./gettingHost";
+import RechargeCard from "./RechargeCard";
+import LineList from "./lineList";
+import ErrorMessage from "./errorMessage";
 
 export {
   AddBarrel,
@@ -24,10 +23,9 @@ export {
   AddKeg,
   StockDetails,
   SubtractInventory,
-  SetSchedule,
   ConnectLine,
   KegDetails,
-  AddEmergencyCard,
-  AddVIPClient,
-  GettingHost
+  RechargeCard,
+  LineList,
+  ErrorMessage
 };

@@ -324,23 +324,19 @@ export default {
     }
   },
   beforeMount: async function() {
+    this.loader = true;
     this.client = this.$route.params;
     this.name = this.client.name;
     this.lastName = this.client.lastName;
     this.cardId = this.client.cardId;
     this.benefits = this.getBenefits;
-    try {
-      this.loader = true;
-      let response = await Api().get(
-        "/client-purchase/" + this.$route.params._id
-      );
-      if (response.data.confirmation) {
-        this.history = response.data.data;
-        this.loader = false;
-        console.log(response.data.data);
-      }
-    } catch (e) {
+    let response = await Api().get(
+      "/client-purchase/" + this.$route.params._id
+    );
+    if (response.data.confirmation) {
+      this.history = response.data.data;
       this.loader = false;
+      console.log(response.data.data);
     }
   },
   methods: {
@@ -408,18 +404,13 @@ export default {
       const url = "/claim-benefit";
       const data = { lineId, benefit: "beers", cardId };
       this.loader = true;
-      try {
-        let response = await Api().post(url, data);
-        this.loader = false;
-        if (response.data.confirmation === "success") {
-          this.lineList = false;
-          this.$router.push({ name: "VIPClients" });
-        } else {
-          console.log(response.data);
-          console.log("valiste");
-        }
-      } catch (e) {
-        this.loader = false;
+      let response = await Api().post(url, data);
+      this.loader = false;
+      if (response.data.confirmation === "success") {
+        this.lineList = false;
+      } else {
+        console.log(response.data);
+        console.log("valiste");
       }
     }
   }

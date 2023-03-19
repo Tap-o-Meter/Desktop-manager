@@ -389,23 +389,18 @@ export default {
     ...mapState("Session", ["BASE_URL"]),
     ...mapGetters("Session", ["getWorker"]),
     ...mapGetters("Sales", ["getLineSales"]),
-
     keg() {
       return this.getKeg(this.line.idKeg);
     },
-
     status() {
       return this.getStatus(this.line);
     },
-
     beer() {
       return this.getBeer(this.keg.beerId);
     },
-
     available() {
       return (this.keg.available / this.keg.capacity) * 100;
     },
-
     merma() {
       return (this.keg.merma / this.keg.capacity) * 100;
     },
@@ -459,7 +454,6 @@ export default {
     worker(workerId) {
       return this.getWorker(workerId);
     },
-
     srmList(srmIndex) {
       return config.getSrm(srmIndex);
     },
@@ -472,7 +466,6 @@ export default {
       else if (key == "date") return;
       else return item[key];
     },
-
     getBeerSalesByConcept(sales) {
       const { kegId } = this.line;
       const categorySales = [
@@ -506,11 +499,9 @@ export default {
       });
       return categorySales;
     },
-
     confirmDisconnect() {
       this.confirm = true;
     },
-
     async disconnectLine() {
       this.loader = true;
       const json_request = { noLinea: this.line.noLinea };
@@ -588,13 +579,11 @@ export default {
   // border-top-left-radius: 5px;
   // border-bottom-left-radius: 5px;
 }
-
 .merma td {
   color: azure;
   // border-top-left-radius: 5px;
   // border-bottom-left-radius: 5px;
 }
-
 td:last-child {
   text-align: end;
   // border-top-right-radius: 5px;
@@ -603,25 +592,20 @@ td:last-child {
 .qty {
   text-align: end;
 }
-
 .merma:hover {
   background: rgba(255, 70, 75, 0.7) !important;
 }
-
 .concept {
   font-size: 11px !important;
   font-weight: bold;
   text-align: end;
 }
-
 .claimed {
   background-color: green;
 }
-
 .claimed:hover {
   background: rgba(0, 128, 0, 0.7) !important;
 }
-
 .claimed td {
   color: azure;
   // border-top-left-radius: 5px;

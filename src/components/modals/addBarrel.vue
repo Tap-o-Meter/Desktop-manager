@@ -172,6 +172,8 @@
   </div>
 </template>
 <script>
+import Api from "../../service/api";
+import axios from "axios";
 import { mapState, mapGetters } from "vuex";
 import ImageInput from "../form/ImageInput.vue";
 export default {

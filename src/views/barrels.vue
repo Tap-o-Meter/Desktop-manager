@@ -19,7 +19,6 @@
             <v-text-field
               v-if="tab === 0"
               dense
-              hide-details 
               solo
               flat
               v-model="search"
@@ -30,7 +29,6 @@
             <v-text-field
               v-else
               dense
-              hide-details 
               solo
               flat
               v-model="searchBeer"
@@ -42,7 +40,6 @@
           <v-col cols="3" class="ml-auto">
             <v-select
               dense
-              hide-details 
               v-if="tab === 0"
               v-model="orden"
               background-color="white"
@@ -54,7 +51,6 @@
             />
             <v-select
               dense
-              hide-details 
               v-else
               v-model="ordenBeer"
               background-color="white"
@@ -68,7 +64,6 @@
           <v-col cols="3">
             <v-select
               dense
-              hide-details 
               v-if="tab === 0"
               v-model="filtro"
               background-color="white"
@@ -81,7 +76,6 @@
             />
             <v-select
               dense
-              hide-details 
               v-else
               v-model="filtroBeer"
               background-color="white"
@@ -278,10 +272,7 @@ export default {
       const { getBeer, getKeg, getStatus } = this;
       if (this.tab === 0) {
         const filteredByName = this.lines.filter(line => {
-          if (line.idKeg.length > 2) {
-            if (this.getKeg(line.idKeg) == undefined) {
-              // console.warn(line.noLinea);
-            }
+          if (line.idKeg.length > 1) {
             return this.getBeer(this.getKeg(line.idKeg).beerId)
               .name.toUpperCase()
               .includes(search.toUpperCase());
@@ -447,9 +438,6 @@ export default {
         return applyedFilter;
       }
     }
-  },
-  mounted: function() {
-    if (this.$route.params.tab) this.tab = this.$route.params.tab;
   }
 };
 </script>
@@ -498,7 +486,6 @@ export default {
       width: 300px;
     }
   }
-
   .mx-2 {
     position: absolute;
     bottom: 20px;

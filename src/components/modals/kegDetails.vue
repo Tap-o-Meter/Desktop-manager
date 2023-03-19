@@ -58,7 +58,7 @@
                         :value="mermaRate"
                       />
                       <h6 class="header-6-alt  ml-2" style="width:40px">
-                        {{ this.mermaRate.toFixed(1) }}%
+                        {{ this.mermaRate }}%
                       </h6>
                     </div>
                   </v-col>
@@ -73,6 +73,7 @@
                           readonly
                           v-model="beer.name"
                           :outlined="edit"
+                          :rules="beerRules"
                           label="Cerveza*"
                           required
                           placeholder="Cerveza"
@@ -83,6 +84,7 @@
                           readonly
                           v-model="abv"
                           :outlined="edit"
+                          :rules="abvRules"
                           label="ABV*"
                           required
                           placeholder="3.5"
@@ -95,6 +97,7 @@
                           readonly
                           v-model="ibu"
                           :outlined="edit"
+                          :rules="ibuRules"
                           label="IBU*"
                           required
                           placeholder="80"
@@ -138,17 +141,6 @@
                         />
                       </v-col>
                     </v-row>
-                    <v-row>
-                      <v-col cols="6">
-                        <v-text-field
-                          readonly
-                          v-model="available"
-                          label="Cantidad Restante"
-                          :outlined="edit"
-                          :append-icon="marker ? 'mdi-alpha-l' : 'mdi-alpha-g'"
-                        />
-                      </v-col>
-                    </v-row>
                   </v-col>
                 </v-row>
               </v-col>
@@ -158,37 +150,12 @@
         <v-divider />
         <v-card-actions class="">
           <v-spacer />
-          <v-btn color="error darken-1" text @click="confirm = true">
-            Marcar como vacío
-          </v-btn>
           <v-btn color="blue darken-1" text @click="handleClose(false)">
             Cerrar
           </v-btn>
         </v-card-actions>
       </v-card>
-      <v-dialog persistent v-model="confirm" max-width="390">
-        <v-card class="pt-3 pl-3 pr-3 pb-1">
-          <v-card-title>Eliminar barril</v-card-title>
-          <v-card-text class="d-flex flex-row align-center">
-            ¿Estás seguro que deseas borrar a el barril preparado el
-            {{ this.prepared }}?, al confirmar sólo se marcará como vacío, no se
-            borrará el barril ni el registro de sus ventas.
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="red darken-1" text @click="confirm = false">
-              Cancelar
-            </v-btn>
-            <v-btn color="primary darken-1" text @click="deleteKeg()">
-              Confirmar
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </v-dialog>
-    <v-overlay z-index="2000" :value="loader">
-      <v-progress-circular indeterminate size="64"></v-progress-circular>
-    </v-overlay>
   </div>
 </template>
 <script>
@@ -198,24 +165,24 @@ import config from "../../config";
 import { mapState } from "vuex";
 export default {
   name: "KegDetails",
-  data: () => ({
-    ibu: "",
-    abv: "",
-    beerId: "null",
-    capacity: "",
-    released: "",
-    prepared: "",
-    available: "",
-    status: "",
-    merma: "",
-    taster: "",
-    soldPints: "",
-    id: "",
-    marker: false,
-    edit: false,
-    confirm: false,
-    loader: false
-  }),
+  data() {
+    return {
+      ibu: "",
+      abv: "",
+      beerId: "null",
+      capacity: "",
+      released: "",
+      prepared: "",
+      available: "",
+      status: "",
+      merma: "",
+      taster: "",
+      soldPints: "",
+      id: "",
+      marker: false,
+      edit: false
+    };
+  },
   props: {
     open: Boolean,
     handleClose: Function,
@@ -246,12 +213,12 @@ export default {
         this.capacity = newVal.capacity;
         this.released = this.parseDate(newVal.released);
         this.prepared = this.parseDate(newVal.prepared);
-        this.available = newVal.available.toFixed(1);
+        this.available = newVal.available;
         this.status = newVal.status;
         this.merma = newVal.merma;
         this.taster = newVal.taster;
         this.soldPints = newVal.soldPints;
-        this.id = newVal._id;
+        this.id = newVal.id;
       }
     }
   },
@@ -261,26 +228,6 @@ export default {
     },
     parseDate(date) {
       return config.parseHalfDate(date);
-    },
-    async deleteKeg() {
-      try {
-        this.loader = true;
-        let response = await Api().post("/deleteKeg", { id: this.id });
-        if (response.data.confirmation) {
-          this.confirm = false;
-          this.loader = false;
-          this.$store.dispatch("Lines/deleteKeg", this.id);
-          this.handleClose(true);
-        } else {
-          this.loader = false;
-          console.log(response.data);
-          console.log("valiste");
-        }
-      } catch (e) {
-        this.loader = false;
-        this.confirm = false;
-        alert("Valió madres");
-      }
     }
   }
 };

@@ -1,11 +1,11 @@
 <template>
   <div>
     <v-dialog v-model="open" persistent width="750px">
-      <v-card class="pt-3 pl-3 pr-3 pb-1">
+      <v-card class="pt-3 pl-3 pr-3 pb-1 ">
         <v-card-title>
           <span class="header-2-alt thin">Agregar Barril</span>
         </v-card-title>
-        <v-divider color="lightgray" class="mb-3" />
+        <v-divider color="lightgray" class=" mb-3" />
         <v-card-text>
           <v-container class="pb-0" fluid>
             <v-form ref="form" lazy-validation>
@@ -39,11 +39,10 @@
                         </template>
                       </v-autocomplete>
                     </v-col>
-                    <v-col cols="3">
+                    <v-col cols="2">
                       <v-text-field
                         v-model="abv"
                         outlined
-                        @keypress="filter"
                         label="ABV*"
                         required
                         placeholder="3.5"
@@ -51,48 +50,29 @@
                       />
                     </v-col>
 
-                    <v-col cols="3">
+                    <v-col cols="2">
                       <v-text-field
                         v-model="ibu"
                         outlined
-                        @keypress="filter"
                         label="IBU*"
                         required
                         placeholder="80"
                       />
                     </v-col>
-                    <v-col cols="6">
-                      <v-combobox
-                        :items="keg_sizes"
+                    <v-col cols="2">
+                      <v-text-field
+                        :append-icon="marker ? 'mdi-alpha-l' : 'mdi-alpha-g'"
+                        @click:append="toggleMarker"
                         v-model="capacity"
-                        :item-value="'qty_lts'"
-                        :item-text="'qty_lts'"
+                        :rules="capacityRules"
                         outlined
-                        @keypress="filter"
-                        label="Capacity *"
+                        label="Cap.*"
                         required
-                        suffix="Lts."
                         placeholder="20"
-                        >
-                        <template v-slot:item="{ index, item }">
-                          <td>{{item.name}} </td>
-                          <v-spacer/>
-                          <td>{{item.qty_gal}}<b>Gal</b> / {{item.qty_lts}}<b>Lts</b> </td>
-                        </template>
-                      </v-combobox>
-                      <!-- :append-outer-icon="marker ? 'mdi-alpha-g' : 'mdi-alpha-l'"
-                      @click:append-outer="toggleMarker" -->
-                      <!-- <v-combobox
-                        v-model="brand"
-                        :items="brands"
-                        :rules="brandRules"
-                        label="Marca*"
-                        required
-                        outlined
-                        placeholder="YCHHOPS"
-                      /> -->
+                      />
                     </v-col>
-
+                  </v-row>
+                  <v-row>
                     <v-col class="pb-0" cols="6">
                       <v-menu
                         ref="menu1"
@@ -110,7 +90,6 @@
                             :rules="dateRules"
                             placeholder="YYYY-MM-DD"
                             outlined
-                            readonly
                             prepend-inner-icon="mdi-calendar-month"
                             v-bind="attrs"
                             v-on="on"
@@ -138,19 +117,20 @@
                             v-model="date2"
                             label="Fecha de enbarrilado"
                             :rules="date2Rules"
+                            placeholder
                             placeholder="YYYY-MM-DD"
                             outlined
                             prepend-inner-icon="mdi-calendar-month"
                             readonly
                             v-bind="attrs"
                             v-on="on"
-                          />
+                          ></v-text-field>
                         </template>
                         <v-date-picker
                           v-model="date2"
                           no-title
                           @input="menu2 = false"
-                        />
+                        ></v-date-picker>
                       </v-menu>
                     </v-col>
                     <v-col class="pa-0" offset="10" cols="2">
@@ -195,9 +175,8 @@
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
 import Api from "../../service/api";
-import config from "./../../config";
+import { mapState } from "vuex";
 export default {
   name: "AddWorker",
   data(vm) {
@@ -206,45 +185,42 @@ export default {
       marker: true,
       beerId: "",
       cant: 1,
-      beerRules: [(v) => !!v || "Requerido"],
+      beerRules: [v => !!v || "El nombre es requerido"],
       abv: "",
       abvRules: [
-        (v) => !!v || "Requerido",
-        (v) => (v && !isNaN(parseFloat(v))) || "El ABV debe de ser un número",
+        v => !!v || "El ABV es requerido",
+        v => (v && !isNaN(parseFloat(v))) || "El ABV debe de ser un número"
       ],
       ibu: "",
       ibuRules: [
-        (v) => !!v || "Requerido",
-        (v) => (v && !isNaN(parseInt(v))) || "El IBU debe de ser un número",
+        v => !!v || "El IBU es requerido",
+        v => (v && !isNaN(parseInt(v))) || "El IBU debe de ser un número"
       ],
       capacity: "",
       capacityRules: [
-        (v) => !!v || "Requerido",
-        (v) =>
-          (v && !isNaN(parseFloat(v))) || "La capacidad debe de ser un número",
+        v => !!v || "La capacidad es requerida",
+        v =>
+          (v && !isNaN(parseFloat(v))) || "La capacidad debe de ser un número"
       ],
       date: "",
-      dateRules: [(v) => !!v || "Requerido"],
+      dateRules: [v => !!v || "La fecha de elaboración es requerida"],
       date2: "",
-      date2Rules: [(v) => !!v || "Requerido"],
+      date2Rules: [v => !!v || "La fecha de enbarrilado es requerida"],
       menu1: false,
-      menu2: false,
+      menu2: false
     };
   },
   props: {
     open: Boolean,
     preBeer: Object,
-    handleClose: Function,
+    handleClose: Function
   },
   computed: {
     ...mapState("Lines", ["beers"]),
-    ...mapState("Session", ["BASE_URL"]),
-    keg_sizes() {
-      return config.keg_sizes;
-    },
+    ...mapState("Session", ["BASE_URL"])
   },
   watch: {
-    open: function (newVal, oldVal) {
+    open: function(newVal, oldVal) {
       if (newVal) {
         if (this.preBeer) {
           this.beerId = this.preBeer._id;
@@ -252,26 +228,15 @@ export default {
           this.ibu = this.preBeer.ibu;
         }
       }
-    },
+    }
   },
 
   methods: {
-    filter: function (evt) {
-      evt = evt ? evt : window.event;
-      let expect = evt.target.value.toString() + evt.key.toString();
-
-      if (!/^[-+]?[0-9]*\.?[0-9]*$/.test(expect)) {
-        evt.preventDefault();
-      } else {
-        return true;
-      }
-    },
     toggleMarker() {
       this.marker = !this.marker;
-      // console.warn(this.capacity);
     },
     beerChange() {
-      const selectedBeer = this.beers.find((beer) => beer._id === this.beerId);
+      const selectedBeer = this.beers.find(beer => beer._id === this.beerId);
       this.abv = selectedBeer.abv;
       this.ibu = selectedBeer.ibu;
     },
@@ -281,31 +246,24 @@ export default {
     async createUser() {
       if (this.$refs.form.validate()) {
         const { marker, capacity, beerId, abv, ibu, date, date2, cant } = this;
-        try {
-          this.loader = true;
-          let response = await Api().post("/addKeg", {
-            qty: cant,
-            prepared: date,
-            released: date2,
-            capacity: marker ? capacity.qty_lts : this.galToliter(),
-            beerId,
-            abv,
-            ibu,
-          });
-          this.loader = false;
-          if (response.data.confirmation === "success") {
-            console.log(response.data);
-            this.$store.dispatch("Lines/addKeg", {
-              ...response.data.data,
-              cant,
-            });
-            this.closeModal();
-          } else {
-            console.log(response.data);
-            console.log("valiste");
-          }
-        } catch (e) {
-          this.loader = false;
+        this.loader = true;
+        let response = await Api().post("/addKeg", {
+          qty: cant,
+          prepared: date,
+          released: date2,
+          capacity: marker ? capacity : this.galToliter(),
+          beerId,
+          abv,
+          ibu
+        });
+        this.loader = false;
+        if (response.data.confirmation === "success") {
+          console.log(response.data);
+          this.$store.dispatch("Lines/addKeg", { ...response.data.data, cant });
+          this.closeModal();
+        } else {
+          console.log(response.data);
+          console.log("valiste");
         }
       }
     },
@@ -323,8 +281,8 @@ export default {
       this.menu1 = false;
       this.menu2 = false;
       this.handleClose(false);
-    },
-  },
+    }
+  }
 };
 </script>
 <style>

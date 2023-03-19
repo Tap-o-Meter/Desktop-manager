@@ -42,9 +42,6 @@ const actions = {
     console.warn("obteniendo il inventatio");
     commit("SET_STOCK", response.data.data);
   },
-  setStock({ commit }, stock) {
-    commit("SET_STOCK", stock);
-  },
   addStock({ commit }, stock) {
     commit("ON_NEW_STOCK", stock);
   },

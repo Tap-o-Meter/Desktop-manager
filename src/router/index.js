@@ -2,18 +2,15 @@ import Vue from "vue";
 import Router from "vue-router";
 import {
   Login,
-  Sales,
-  Config,
+  Dashboard,
   Barrels,
   Workers,
-  Dashboard,
-  Inventario,
+  WorkerDetails,
+  Sales,
+  LineDetails,
   KegDetails,
   VIPClients,
-  LineDetails,
-  ExpandedList,
-  WorkerDetails,
-  ClientDetails,
+  ClientDetails
 } from "../views";
 
 Vue.use(Router);
@@ -33,8 +30,7 @@ export default new Router({
     {
       path: "/barrels",
       name: "barrels",
-      component: Barrels,
-      params: true
+      component: Barrels
     },
     {
       path: "/line-details/:id",
@@ -63,27 +59,6 @@ export default new Router({
       path: "/sales",
       name: "sales",
       component: Sales
-    },
-    {
-      path: "/list-details",
-      name: "list-details",
-      component: ExpandedList,
-      params: true
-    },
-    {
-      path: "inventario",
-      name: "inventario",
-      component: Inventario
-    },
-    {
-      path: "/configuration",
-      name: "config",
-      component: Config
-    },
-    {
-      path: "/Clients",
-      name: "VIPClients",
-      component: VIPClients
     },
     {
       path: "/client-details/:id",

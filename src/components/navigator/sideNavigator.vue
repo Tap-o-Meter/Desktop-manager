@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer
+   <v-navigation-drawer
     v-if="this.$route.name != 'login'"
     permanent
     color="#22252a"
@@ -51,51 +51,59 @@
             :class="connected ? ' green--text' : ' red--text'"
           />
           <span
+            @click="handleDisconnected()"
             style="padding-top:2px;"
             class="body-2 font-weight-bold white--text"
+            :class="!connected ? 'pointer' : null"
           >
             {{ connected ? "Conectado" : "Desconectado" }}
           </span>
         </v-list-item>
       </v-list>
     </template>
+    <ConnectDevice :open="dialog" :handleClose="closeModal" />
   </v-navigation-drawer>
 </template>
 
 <script>
 import { mapState } from "vuex";
+import ConnectDevice from "../modals/connectDevice";
 export default {
   name: "SideNavigator",
   data() {
     return {
       drawer: true,
+      dialog: false,
       windowWidth: window.innerWidth,
       items: [
         { title: "Home", icon: "mdi-home", route: "dashboard" },
         {
-          title: "Trabajadores",
-          icon: "mdi-account-hard-hat",
+          title: "Tarjetas",
+          icon: "mdi-card-account-details-star",
           route: "workers"
         },
         { title: "Barriles", icon: "mdi-keg", route: "barrels" },
-        { title: "Ventas", icon: "mdi-credit-card-outline", route: "sales" },
-        {
-          title: "Inventario",
-          icon: "mdi-clipboard-list",
-          route: "inventario"
-        },
-        { title: "Configuración", icon: "mdi-cog", route: "config" },
-        {
-          title: "Chikilla VIP",
-          icon: "mdi-card-account-details-star",
-          route: "VIPClients"
-        }
+        { title: "Ventas", icon: "mdi-credit-card-outline", route: "sales" }
       ]
     };
   },
+  components: {
+    ConnectDevice
+  },
+  methods: {
+    handleDisconnected: function() {
+      const { connected } = this;
+      if (!connected) {
+        this.dialog = true;
+      }
+    },
+    closeModal: function() {
+      this.dialog = false;
+    }
+  },
   computed: {
     ...mapState("CardReader", ["connected"]),
-    ...mapState("Session", ["placeInfo", "BASE_URL"]),
+    ...mapState("Session", ["placeInfo", "BASE_URL"])
   },
   mounted() {
     window.onresize = () => {
@@ -114,7 +122,6 @@ export default {
 .v-list-item {
   padding: 0 16px !important;
 }
-
 .avatar-expanded {
   margin-top: 10px;
   padding-left: 0 !important;

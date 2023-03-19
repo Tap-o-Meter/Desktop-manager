@@ -23,26 +23,16 @@
       <v-row>
         <v-col class="d-flex flex-column pr-0">
           <span class="header-2-alt bold text-center ">
+            0
+          </span>
+          <p class="bold-names text-center ">Vasos</p>
+        </v-col>
+        <v-col class="d-flex flex-column ">
+          <span class="header-2-alt bold text-center ">
             {{ this.worker.qty }} L
           </span>
-          <p class="bold-names text-center ">en el mes</p>
+          <p class="bold-names text-center ">Consumido</p>
         </v-col>
-        <!-- <v-col
-          v-if="worker.horario.length > 0"
-          class="d-flex justify-start align-center "
-        >
-          <span class="text-left header-4-alt light">
-            <span :class="days.indexOf('lunes') > 1 ? 'dayWork' : ''">L</span>
-            <span :class="days.indexOf('martes') > 1 ? 'dayWork' : ''">M</span>
-            <span :class="days.indexOf('miércoles') > 1 ? 'dayWork' : ''">
-              M
-            </span>
-            <span :class="days.indexOf('jueves') > 1 ? 'dayWork' : ''">J</span>
-            <span :class="days.indexOf('viernes') > 1 ? 'dayWork' : ''">V</span>
-            <span :class="days.indexOf('sábado') > 1 ? 'dayWork' : ''">S</span>
-            <span :class="days.indexOf('domingo') > 1 ? 'dayWork' : ''">D</span>
-          </span>
-        </v-col> -->
       </v-row>
     </v-container>
 

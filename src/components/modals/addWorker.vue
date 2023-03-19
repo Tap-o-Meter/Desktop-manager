@@ -9,81 +9,6 @@
           </span>
         </v-card-title>
         <v-divider color="lightgray" class="mb-1" />
-
-        <!--                              aquí                     -->
-        <!-- <v-card-text>
-          <v-container fluid>
-            <v-form ref="form" lazy-validation>
-              <v-row>
-                <v-col cols="12" md="4" style="position:relative">
-                  <image-input v-model="image" class="image-picker">
-                    <div slot="activator" class="image-wrapper">
-                      <div
-                        class="d-flex flex-column"
-                        v-if="!image"
-                        style="text-align:center"
-                      >
-                        <v-icon :size="90" color="grey">
-                          mdi-image-filter-hdr
-                        </v-icon>
-                        <span class="pb-2">NO IMAGE</span>
-                      </div>
-                      <v-avatar size="100%" v-ripple v-else class="mb-0" tile>
-                        <v-img :src="image.imageURL" alt="image" />
-                      </v-avatar>
-                      <div
-                        class="d-flex justify-center align-center"
-                        style="left:0;right:0;margin-left: auto;margin-right: auto;position: absolute; bottom: -20px; width: 40px; height: 40px;border-radius: 9px;box-shadow: 0 10px 20px -5px #9794f2;border: solid 1px #9794f2;background-color: #9794f2;"
-                      >
-                        <v-icon color="white">mdi-camera</v-icon>
-                      </div>
-                    </div>
-                  </image-input>
-                </v-col>
-                <v-col md="8" class="pl-0 mt-2">
-                  <v-row>
-                    <v-col cols="6">
-                      <v-text-field
-                        outlined
-                        placeholder=" "
-                        label="Nombre(s)*"
-                        v-model="nombre"
-                        :rules="nameRules"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-text-field
-                        outlined
-                        v-model="cardId"
-                        label="Card ID*"
-                        :rules="cardRules"
-                        placeholder="A1 B2 C3 D4"
-                        required
-                        readonly
-                      />
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        label="Apellidos*"
-                        outlined
-                        :rules="apellidosRules"
-                        placeholder=" "
-                        v-model="apellidos"
-                        hint="example of persistent helper text"
-                        persistent-hint
-                        required
-                      />
-                    </v-col>
-                  </v-row>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-container>
-          <small>*indicates required field</small>
-        </v-card-text> -->
-        <!--                              aquí                     -->
-
         <v-card-text>
           <v-container fluid class="pa-0">
             <v-scroll-x-transition :hide-on-leave="true">
@@ -95,32 +20,7 @@
             <v-scroll-x-transition :hide-on-leave="true">
               <v-form v-show="!setCard" ref="form" lazy-validation>
                 <v-row class="row-container ma-0">
-                  <v-col cols="12" md="4" style="position:relative">
-                    <image-input v-model="image" class="image-picker">
-                      <div slot="activator" class="image-wrapper">
-                        <div
-                          class="d-flex flex-column"
-                          v-if="!image"
-                          style="text-align:center"
-                        >
-                          <v-icon :size="90" color="grey">
-                            mdi-image-filter-hdr
-                          </v-icon>
-                          <span class="pb-2">NO IMAGE</span>
-                        </div>
-                        <v-avatar size="100%" v-ripple v-else class="mb-0" tile>
-                          <v-img :src="image.imageURL" alt="image" />
-                        </v-avatar>
-                        <div
-                          class="d-flex justify-center align-center"
-                          style="left:0;right:0;margin-left: auto;margin-right: auto;position: absolute; bottom: -20px; width: 40px; height: 40px;border-radius: 9px;box-shadow: 0 10px 20px -5px #9794f2;border: solid 1px #9794f2;background-color: #9794f2;"
-                        >
-                          <v-icon color="white">mdi-camera</v-icon>
-                        </div>
-                      </div>
-                    </image-input>
-                  </v-col>
-                  <v-col md="8" class="pl-0 mt-2">
+                  <v-col md="12" class="pl-0 mt-2">
                     <v-row>
                       <v-col cols="6">
                         <v-text-field
@@ -198,7 +98,7 @@
   </div>
 </template>
 <script>
-import Api, {multipartHeaders} from "../../service/api";
+import Api from "../../service/api";
 import { mapState } from "vuex";
 import { suscribe, unsuscribe } from "../../api/index.js";
 import ConnectDevice from "./connectDevice";
@@ -243,7 +143,7 @@ export default {
     worker: Object
   },
 
-  mounted: function() {
+  beforeMount: function() {
     const option = this.connected ? 0 : 1;
     this.animationClass = this.animationClasses[option];
     this.getAnimation(option);
@@ -311,7 +211,7 @@ export default {
     closeModal() {
       this.dialog = false;
     },
-    closeScreen(should_reset) {
+    closeScreen() {
       if (!this.worker) {
         this.$refs.form.resetValidation();
         this.image = null;
@@ -328,39 +228,31 @@ export default {
         this.getAnimation(option);
         this.message = this.messageList[option];
       }
-      this.handleClose(should_reset);
+      this.handleClose();
     },
     async createUser() {
       if (this.$refs.form.validate()) {
         const url = this.worker ? "/editPersonal" : "/addPersonal";
-        try {
-          let { image, nombre, apellidos, cardId } = this;
-          this.loader = true;
-          const formData = new FormData();
-          image
-            ? image.imageFile
-              ? formData.append("file", image.imageFile)
-              : null
-            : null;
-          this.worker ? formData.append("id", this.worker._id) : null;
-          formData.append("nombre", nombre);
-          formData.append("apellidos", apellidos);
-          formData.append("cardId", cardId);
-          let response = await Api().post(url, formData, multipartHeaders);
-          this.loader = false;
-          if (response.data.confirmation === "success") {
-            console.log(response.data.data);
-            const action = this.worker
-              ? "Session/updateWorker"
-              : "Session/newWorker";
-            this.$store.dispatch(action, response.data.data);
-            this.closeScreen(true);
-          } else {
-            console.log(response.data);
-            alert("La tarjeta ingresada ya fue registrada");
-          }
-        } catch (e) {
-          this.loader = false;
+        const { nombre, apellidos, cardId } = this;
+        this.loader = true;
+        const data = {
+          nombre: this.nombre,
+          apellidos: this.apellidos,
+          cardId: this.cardId
+        };
+        this.worker ? (data.id = this.worker._id) : null;
+        let response = await Api().post(url, data);
+        this.loader = false;
+        if (response.data.confirmation === "success") {
+          console.log(response.data.data);
+          const action = this.worker
+            ? "Session/updateWorker"
+            : "Session/newWorker";
+          this.$store.dispatch(action, response.data.data);
+          this.closeScreen();
+        } else {
+          console.log(response.data);
+          console.log("valiste");
         }
         // this.loader = true;
         // let response = await Api().post("/addPersonal", {

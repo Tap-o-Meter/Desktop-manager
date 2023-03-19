@@ -20,6 +20,11 @@ export function connectToSocket() {
     console.log("este es el mensaje: " + msg);
   });
 
+  socket.on("Linelist", msg => {
+    store.dispatch("Lines/setLines", msg);
+    // store.dispatch("Session/setPlaceInfo", msg.placeInfo);
+  });
+
   socket.on("connectedLines", msg => {
     store.dispatch("Lines/setConnectedLines", msg.connectedLines);
   });

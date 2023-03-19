@@ -134,15 +134,14 @@ export default {
     applyFilter(filtro) {
       const levels = [""];
       return this.Clients.filter(client => {
-        // console.warn(config.cardLevels[client.level - 1] === filtro);
+        console.warn(config.cardLevels[client.level - 1] === filtro);
         return filtro === "Todos" || filtro === ""
           ? true
           : config.cardLevels[client.level - 1] === filtro;
       });
     },
-    closeModal(should_reset) {
+    closeModal() {
       this.dialog = false;
-      if (should_reset) this.loadClients();
     },
     getLevel(level) {
       return config.cardLevels[level - 1];
@@ -155,22 +154,19 @@ export default {
     },
     gottoWorker(value) {
       this.$router.push({ name: "client-details", params: value });
-    },
-    async loadClients() {
-      this.loader = true;
-      try {
-        let response = await Api().get("/getClients");
-        if (response.data.confirmation) {
-          this.Clients = response.data.data;
-          this.loader = false;
-        }
-      } catch (e) {
-        this.loader = false;
-      }
     }
   },
   beforeMount: async function() {
-    this.loadClients();
+    this.loader = true;
+    try {
+      let response = await Api().get("/getClients");
+      if (response.data.confirmation) {
+        this.Clients = response.data.data;
+        this.loader = false;
+      }
+    } catch (e) {
+      this.loader = false;
+    }
   }
 };
 </script>
