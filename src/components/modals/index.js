@@ -13,6 +13,9 @@ import KegDetails from "./kegDetails";
 import AddEmergencyCard from "./addEmergencyCard";
 import AddVIPClient from "./addVIPClient";
 import GettingHost from "./gettingHost";
+import RechargeCard from "./RechageCard";
+import ErrorMessage from "./ErrorMessage";
+
 
 export {
   AddBarrel,
@@ -29,5 +32,7 @@ export {
   KegDetails,
   AddEmergencyCard,
   AddVIPClient,
-  GettingHost
+  GettingHost,
+  RechargeCard,
+  ErrorMessage
 };

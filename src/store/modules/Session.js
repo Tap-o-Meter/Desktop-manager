@@ -11,8 +11,14 @@ const state = {
     instagram: "@chikillacraftbeer",
     facebook: "/chikilla.ensenada",
     twitter: ""
-  }
+  },
+  prices: {
+    pint: 90,
+    taster: 35,
+    flight: 15
+  },
 };
+
 
 const mutations = {
   SET_USER(state, user) {

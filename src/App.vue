@@ -4,11 +4,22 @@
       <SideNavigator />
 
       <div :class="this.$route.name != 'login' ? 'app-wrapper' : 'full-screen'">
-        
         <transition name="fade" mode="out-in">
           <router-view />
         </transition>
         <ConnectLine :open="lineDialog" :handleClose="showConnectLine" />
+        <ErrorMessage
+          :visible="showError"
+          :message="message"
+          :handleClose="closeError"
+          :fistLoad="errorLoad"
+        />
+        <RechargeCard
+          :user="workerAction"
+          :open="rechargeDialog"
+          :handleClose="showRechargeCard"
+        />
+
         <MultipleOptions
           :open="visible"
           :handleClose="showOptions"
@@ -42,36 +53,63 @@ import { SideNavigator } from "./components/navigator";
 import { setStore, setMainOptions, connectToSocket, socket } from "./api";
 import { mapGetters, mapState } from "vuex";
 import config from "./config";
-import { MultipleOptions, ConnectLine, GettingHost } from "./components/modals";
+import Api from "./service/api";
+import {
+  MultipleOptions,
+  ConnectLine,
+  GettingHost,
+  ErrorMessage,
+  RechargeCard,
+} from "./components/modals";
+
 export default {
   name: "retry3",
-  components: { SideNavigator, MultipleOptions, ConnectLine, GettingHost },
+  components: {
+    SideNavigator,
+    MultipleOptions,
+    ConnectLine,
+    GettingHost,
+    ErrorMessage,
+    RechargeCard,
+  },
   data() {
     return {
       visible: false,
       cardId: null,
+      workerAction: null,
       lineDialog: false,
+      message: "",
       errorLookingServer: false,
       getting_host: true,
+      rechargeDialog: false,
+      showError: false,
+      errorLoad: true,
       options: [
         {
           icon: "$searchUser",
           name: "Buscar Usuario",
           action: this.navigateWorker,
-          color: "cyanGradient"
+          color: "cyanGradient",
         },
+        {
+          icon: "mdi-card-plus",
+          name: "Recargar Tarjeta",
+          action: this.showRechargeCard,
+          color: "cyanGradient",
+        },
+
         {
           icon: "$connectBeer",
           name: "Conectar Linea",
           action: this.showConnectLine,
-          color: "yellowgradient"
-        }
-      ]
+          color: "yellowgradient",
+        },
+      ],
     };
   },
   computed: {
     ...mapGetters("Session", ["getWorkerByCardId"]),
-    ...mapState("Session", ["connectionStatus"])
+    ...mapState("Session", ["connectionStatus"]),
   },
   methods: {
     showQuickActions(msg) {
@@ -80,9 +118,36 @@ export default {
     showOptions(value) {
       this.visible = value;
     },
+    showRechargeCard(value) {
+      if (!value) {
+        this.rechargeDialog = false;
+        this.showOptions(false);
+        return;
+      }
+      this.getUser();
+    },
     closeGettingHost() {
       this.getting_host = false;
       this.errorLookingServer = false;
+    },
+    async getUser() {
+      const { cardId } = this;
+      this.loader = true;
+      let response = await Api("http://192.168.1.79:3000").post("/get-user", {
+        cardId,
+      });
+      this.loader = false;
+      if (response.data.confirmation === "success") {
+        console.log(response.data.data);
+        this.workerAction = response.data.data;
+        this.rechargeDialog = true;
+      } else {
+        console.log("cardId:");
+        console.log({ cardId });
+        console.log(response.data);
+        this.message = response.data.msg;
+        this.showError = true;
+      }
     },
     async lookForServer() {
       this.errorLookingServer = false;
@@ -106,16 +171,19 @@ export default {
     showConnectLine(value) {
       this.lineDialog = value;
     },
-    navigateWorker: function() {
+    closeError() {
+      this.showError = false;
+    },
+    navigateWorker: function () {
       this.$router.push({
         name: "worker-details",
-        params: { id: this.getWorkerByCardId(this.cardId)._id }
+        params: { id: this.getWorkerByCardId(this.cardId)._id },
       });
-    }
+    },
   },
   async mounted() {
     this.lookForServer();
-  }
+  },
 };
 </script>
 
