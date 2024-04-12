@@ -291,23 +291,27 @@ export default {
       this.abv = selectedBeer.abv;
       this.ibu = selectedBeer.ibu;
     },
-    galToliter() {
-      return this.capacity * 3.785411784;
+    galToliter(volume) {
+      return volume * 3.785411784;
     },
     async createUser() {
       if (this.$refs.form.validate()) {
-        const { marker, capacity, beerId, abv, ibu, date, date2, cant } = this;
+        const { marker, customCapacity, beerId, abv, ibu, date, date2, cant } = this;;
         try {
-          this.loader = true;
-          let response = await Api().post("/addKeg", {
+          // this.loader = true;
+          const data = {
             qty: cant,
             prepared: date,
             released: date2,
-            capacity: marker ? capacity.qty_lts : this.galToliter(),
+            capacity: (marker ? customCapacity : this.galToliter(customCapacity)),
             beerId,
             abv,
             ibu,
-          });
+          };
+          console.log(data);
+          return;
+          
+          let response = await Api().post("/addKeg", data);
           this.loader = false;
           if (response.data.confirmation === "success") {
             console.log(response.data);
