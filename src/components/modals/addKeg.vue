@@ -298,7 +298,7 @@ export default {
       if (this.$refs.form.validate()) {
         const { marker, customCapacity, beerId, abv, ibu, date, date2, cant } = this;;
         try {
-          // this.loader = true;
+          this.loader = true;
           const data = {
             qty: cant,
             prepared: date,
@@ -308,8 +308,6 @@ export default {
             abv,
             ibu,
           };
-          console.log(data);
-          return;
           
           let response = await Api().post("/addKeg", data);
           this.loader = false;
