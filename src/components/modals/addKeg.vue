@@ -73,6 +73,7 @@
                         required
                         suffix="Lts."
                         placeholder="20"
+                        :search-input.sync="searchInput"
                         >
                         <template v-slot:item="{ index, item }">
                           <td>{{item.name}} </td>
@@ -218,6 +219,7 @@ export default {
         (v) => (v && !isNaN(parseInt(v))) || "El IBU debe de ser un número",
       ],
       capacity: "",
+      customCapacity: "",
       capacityRules: [
         (v) => !!v || "Requerido",
         (v) =>
@@ -242,6 +244,17 @@ export default {
     keg_sizes() {
       return config.keg_sizes;
     },
+    searchInput: {
+    get() {
+      // Convertir el número a cadena cuando se accede
+      return String(this.customCapacity);
+    },
+    set(value) {
+      // Convertir la cadena a número cuando se establece
+      const number = Number(value);
+      this.customCapacity = number || "";
+    }
+  }
   },
   watch: {
     open: function (newVal, oldVal) {
@@ -252,6 +265,9 @@ export default {
           this.ibu = this.preBeer.ibu;
         }
       }
+    },
+    customCapacity: function (newVal, oldVal) {
+      console.warn(newVal = String(newVal));
     },
   },
 
