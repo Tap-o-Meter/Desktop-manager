@@ -74,11 +74,14 @@
                         suffix="Lts."
                         placeholder="20"
                         :search-input.sync="searchInput"
-                        >
+                      >
                         <template v-slot:item="{ index, item }">
-                          <td>{{item.name}} </td>
-                          <v-spacer/>
-                          <td>{{item.qty_gal}}<b>Gal</b> / {{item.qty_lts}}<b>Lts</b> </td>
+                          <td>{{ item.name }}</td>
+                          <v-spacer />
+                          <td>
+                            {{ item.qty_gal }}<b>Gal</b> / {{ item.qty_lts
+                            }}<b>Lts</b>
+                          </td>
                         </template>
                       </v-combobox>
                       <!-- :append-outer-icon="marker ? 'mdi-alpha-g' : 'mdi-alpha-l'"
@@ -245,16 +248,16 @@ export default {
       return config.keg_sizes;
     },
     searchInput: {
-    get() {
-      // Convertir el número a cadena cuando se accede
-      return String(this.customCapacity);
+      get() {
+        // Convertir el número a cadena cuando se accede
+        return String(this.customCapacity);
+      },
+      set(value) {
+        // Convertir la cadena a número cuando se establece
+        const number = Number(value);
+        this.customCapacity = number || "";
+      },
     },
-    set(value) {
-      // Convertir la cadena a número cuando se establece
-      const number = Number(value);
-      this.customCapacity = number || "";
-    }
-  }
   },
   watch: {
     open: function (newVal, oldVal) {
@@ -267,7 +270,7 @@ export default {
       }
     },
     customCapacity: function (newVal, oldVal) {
-      console.warn(newVal = String(newVal));
+      console.warn((newVal = String(newVal)));
     },
   },
 
@@ -296,19 +299,19 @@ export default {
     },
     async createUser() {
       if (this.$refs.form.validate()) {
-        const { marker, customCapacity, beerId, abv, ibu, date, date2, cant } = this;;
+        const { marker, customCapacity, beerId, abv, ibu, date, date2, cant } = this;
         try {
           this.loader = true;
           const data = {
             qty: cant,
             prepared: date,
             released: date2,
-            capacity: (marker ? customCapacity : this.galToliter(customCapacity)),
+            capacity: marker ? customCapacity : this.galToliter(customCapacity),
             beerId,
             abv,
             ibu,
           };
-          
+
           let response = await Api().post("/addKeg", data);
           this.loader = false;
           if (response.data.confirmation === "success") {
