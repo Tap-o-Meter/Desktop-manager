@@ -2,11 +2,11 @@
     <v-dialog
       persistent
       :value="dialog"
-      :hide-overlay="fistLoad"
-      :transition="fistLoad ? false : 'dialog-transition'"
-      :max-width="fistLoad ? '0px' : '450px'"
+      :hide-overlay="firstLoad"
+      :transition="firstLoad ? false : 'dialog-transition'"
+      :max-width="firstLoad ? '0px' : '450px'"
     >
-      <v-card v-show="!fistLoad">
+      <v-card v-show="!firstLoad">
         <v-container fluid>
           <v-row class="row-container">
             <div id="animation" class="green-check"></div>
@@ -27,7 +27,7 @@
     }),
     props: {
       visible: Boolean,
-      fistLoad: Boolean,
+      firstLoad: Boolean,
       handleClose: Function,
       message: String
     },

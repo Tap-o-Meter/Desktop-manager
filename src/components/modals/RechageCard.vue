@@ -86,6 +86,9 @@
           </v-card-text>
           <v-divider />
           <v-card-actions class="">
+            <v-btn color="warning darken-1" text @click="resetTag()">
+              Reset Tag <v-icon>mdi-refresh</v-icon>
+            </v-btn>
             <v-spacer />
             <v-btn color="error darken-1" text @click="closeModal()">
               Cancelar
@@ -151,6 +154,30 @@
       },
       async rechargeCard() {
         const { pint, taster, flight, user } = this;
+        this.loader = true;
+        let response = await Api("http://192.168.1.79:3000").post("/recharge-card", {
+          cardId: user._id,
+          beers: { pint, taster, flight }
+        });
+        this.loader = false;
+        if (response.data.confirmation === "success") {
+          // this.$store.dispatch("Lines/replaceLine", {
+          //   data: response.data.data,
+          //   newStatus: status
+          // });
+          this.closeModal();
+        } else {
+          console.log(response.data);
+          console.log("valiste");
+        }
+      },
+      async resetTag(){
+        const { user } = this;
+
+        const pint = user.beers.pint * -1;
+        const taster = user.beers.taster * -1;
+        const flight = user.beers.flight * -1;
+
         this.loader = true;
         let response = await Api("http://192.168.1.79:3000").post("/recharge-card", {
           cardId: user._id,

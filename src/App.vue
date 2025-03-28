@@ -12,7 +12,7 @@
           :visible="showError"
           :message="message"
           :handleClose="closeError"
-          :fistLoad="errorLoad"
+          :firstLoad="errorLoad"
         />
         <RechargeCard
           :user="workerAction"
@@ -36,6 +36,9 @@
         >
           <b>Revise conexión</b>. No está conectado al servidor
         </v-alert>
+        <v-overlay z-index="2000" :value="loader">
+          <v-progress-circular indeterminate size="64"></v-progress-circular>
+        </v-overlay>
         <GettingHost
           v-if="getting_host"
           :open="getting_host"
@@ -84,6 +87,7 @@ export default {
       rechargeDialog: false,
       showError: false,
       errorLoad: true,
+      loader: false,
       options: [
         {
           icon: "$searchUser",
@@ -133,20 +137,37 @@ export default {
     async getUser() {
       const { cardId } = this;
       this.loader = true;
-      let response = await Api("http://192.168.1.79:3000").post("/get-user", {
-        cardId,
-      });
-      this.loader = false;
-      if (response.data.confirmation === "success") {
-        console.log(response.data.data);
-        this.workerAction = response.data.data;
-        this.rechargeDialog = true;
-      } else {
-        console.log("cardId:");
-        console.log({ cardId });
-        console.log(response.data);
-        this.message = response.data.msg;
+      try {
+        let response = await Api("http://192.168.1.79:3000").post("/get-user", {
+          cardId,
+        });
+
+        // Si la respuesta HTTP no es 200, lanzamos un error
+        if (response.status !== 200) {
+          throw new Error("Error en la conexión: Código " + response.status);
+        }
+
+        if (response.data.confirmation === "success") {
+          this.workerAction = response.data.data;
+          this.rechargeDialog = true;
+        } else {
+          // El servidor respondió pero no encontró el usuario
+          this.message = "No se encontró el usuario";
+          this.showError = true;
+          this.errorLoad = false;
+        }
+      } catch (error) {
+        console.error("Error en la petición:", error);
+        // Diferencia el error de red del error de respuesta
+        this.message = "No hay conexión con el servidor";
+        // if (error.code === "ERR_NETWORK") {
+        // } else {
+        //   this.message = error.message || "Error desconocido";
+        // }
         this.showError = true;
+        this.errorLoad = false;
+      } finally {
+        this.loader = false;
       }
     },
     async lookForServer() {
