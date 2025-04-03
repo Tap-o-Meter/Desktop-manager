@@ -22,13 +22,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Update browserslist database
+        run: npx update-browserslist-db@latest --force
+
       - name: Build Windows installer
         run: npm run electron:build
-        # Asegúrate de que en package.json tengas definido el script adecuado
-        # por ejemplo, "electron:build" o "dist:win" para generar el instalador
+        # Asegúrate de que en package.json el script electron:build realice el build para Windows.
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Windows-App
-          path: dist/  # Ajusta esta ruta según donde se generen tus archivos de salida
+          path: dist/  # Ajusta según donde se genere el instalador
