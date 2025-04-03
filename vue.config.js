@@ -8,9 +8,9 @@ module.exports = defineConfig({
       customFileProtocol: './',
       nodeIntegration: true,
       externals: ['serialport'],
+      publish: "never",
       extraMetadata: {
-        publish: "never",
-        // Si tienes build en package.json que no quieres que se incluya, también puedes removerlo:
+        // Asegúrate de no incluir una propiedad "build" aquí
         build: undefined
       }
     },
