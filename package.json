@@ -7,6 +7,7 @@
   "author": "Emmanuel Lastra Williams <lastra21e@gmail.com>",
   "version": "2022.3.24",
   "private": true,
+  "publish": null,
   "scripts": {
     "rebuild": " ./node_modules/.bin/electron-rebuild",
     "serve": "vue-cli-service serve",
