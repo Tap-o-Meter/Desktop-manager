@@ -61,8 +61,5 @@
     "vue-loader-v15": "0.0.1-security",
     "vue-template-compiler": "^2.6.14",
     "vuetify-loader": "^1.7.0"
-  },
-  "build": {
-    "publish": "never"
   }
 }

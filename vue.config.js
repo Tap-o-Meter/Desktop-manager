@@ -8,6 +8,9 @@ module.exports = defineConfig({
       customFileProtocol: './',
       nodeIntegration: true,
       externals: ['serialport'],
+      extraMetadata: {
+        build: undefined
+      }
     },
   },
 })
