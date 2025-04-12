@@ -155,7 +155,7 @@
       async rechargeCard() {
         const { pint, taster, flight, user } = this;
         this.loader = true;
-        let response = await Api("http://192.168.1.79:3000").post("/recharge-card", {
+        let response = await Api("http://192.168.1.59:3001").post("/recharge-card", {
           cardId: user._id,
           beers: { pint, taster, flight }
         });
@@ -179,7 +179,7 @@
         const flight = user.beers.flight * -1;
 
         this.loader = true;
-        let response = await Api("http://192.168.1.79:3000").post("/recharge-card", {
+        let response = await Api("http://192.168.1.59:3001").post("/recharge-card", {
           cardId: user._id,
           beers: { pint, taster, flight }
         });

@@ -1,10 +1,11 @@
 import dns from "dns";
+
 export default {
   BASE_URL: async function() {
     // return "127.0.0.1";
-    // return "192.168.0.121";
+    // return "192.168.1.59";
     return new Promise((resolve, reject) => {
-      dns.lookup("beer-control.local", (err, address, family) => {
+      dns.lookup("tom-server.local", (err, address, family) => {
         if (err) reject(err);
         resolve(address);
       });
