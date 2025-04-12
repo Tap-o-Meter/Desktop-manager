@@ -138,7 +138,7 @@ export default {
       const { cardId } = this;
       this.loader = true;
       try {
-        let response = await Api("http://192.168.1.79:3000").post("/get-user", {
+        let response = await Api("http://192.168.1.59:3001").post("/get-user", {
           cardId,
         });
 
